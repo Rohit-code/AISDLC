@@ -75,7 +75,7 @@ A YAML file at `<project>-context/contracts/<feature>.yaml` following `templates
 2. `@planner` commits the contract to `<project>-context/contracts/<feature>.yaml`.
 3. `@planner` posts a comment on the **Contract sub-issue** summarizing the contract and tagging both BE and FE owners.
 4. **BOTH** BE dev and FE dev leave an approval comment on the Contract sub-issue. Approval = "reviewed, request/response shapes work for my side, permission matrix clear, error schema agreed, field naming aligned."
-5. Only after both approvals can the parent ticket move to **💻 AI Development**. `@ticket-manager` blocks premature transitions.
+5. Once both have approved, the Contract sub-issue is closed. Only then can the parent ticket move **🔧 Tech Plan Approved → 💻 AI Development**. `@ticket-manager` blocks premature transitions.
 
 ### What counts as approval
 
@@ -96,22 +96,22 @@ In solo mode, the human operator approves both sides (or explicitly delegates vi
 
 ## Rule 4 — TDD enforcement on both sides
 
-Once the contract validation gate passes and the parent ticket is in **💻 AI Development**, `@tester` runs **before** any `@builder` or `@fe-builder` writes production code.
+Once the contract validation gate passes and the parent ticket is in **💻 AI Development**, `@tester` runs **before** any `@builder` or `@fe-builder` writes production code. `@fe-builder` starts only after `@tester` has committed the FE tests.
 
 ### BE side
 
-- Backend tests (the stack's test framework, e.g. JUnit 5 in erp-core) covering contract happy path, error cases, permissions.
+- Backend tests in the stack's test framework (JUnit 5 / Spring Boot Test for erp-core) covering contract happy path, error cases, permissions.
 - Tests fail initially (no implementation yet). If they pass without implementation, the test is wrong.
 
 ### FE side
 
-- RTL / Vitest tests for components, with API responses mocked per the contract.
+- Component tests in the stack's FE test framework (Vitest + Testing Library for erp-fe), with API responses mocked per the contract.
 - Integration tests for screens that compose multiple contract endpoints.
 - Tests fail initially.
 
 ### Enforcement
 
-`@tester` commits failing tests to its feature branch and signals handoff on the ticket: *"Tests written, failing as expected, ready for `@builder` / `@fe-builder`."* If either builder finds missing test coverage for a contract case mid-implementation, they pause and ask `@tester` to extend — they don't silently add tests for the thing they just implemented.
+`@tester` creates the ticket's `feature/<id>-<slug>` branch, commits failing tests to it, and signals handoff; builders continue on that same branch (`.claude/rules/source-control.md`). Handoff message on the ticket: *"Tests written, failing as expected, ready for `@builder` / `@fe-builder`."* If either builder finds missing test coverage for a contract case mid-implementation, they pause and ask `@tester` to extend — they don't silently add tests for the thing they just implemented.
 
 ---
 
@@ -129,7 +129,7 @@ Parent ticket must have a populated **Migration / gap callouts** section by the 
 ### Common callout categories
 
 - **Data migrations** — backfills, one-off scripts, idempotent retries.
-- **Schema migrations** — expand/contract pattern per F29 `deployment.md` (once it ships).
+- **Schema migrations** — expand/contract pattern (add new, migrate, remove old in a later release); in ERP, Flyway numbers per `.claude/rules/erp-guardrails.md`.
 - **Env vars / secrets** — what's new? How does staging/prod get them?
 - **Feature flags** — is this gated? Who owns flag lifecycle?
 - **Rollout plan** — all at once? Gradual? Shadow deploy?
@@ -139,11 +139,11 @@ Parent ticket must have a populated **Migration / gap callouts** section by the 
 
 ## Interaction with other rules
 
-- **`kanban-workflow.md`**: sub-issue creation happens at 🤖 FRD Tech Plan transition out. Contract gate blocks movement into 💻 AI Development.
+- **`kanban-workflow.md`**: sub-issue creation happens at 🤖 FRD Tech Plan transition out. Contract gate blocks 🔧 Tech Plan Approved → 💻 AI Development.
 - **`size-audit.md`**: re-validation at build time (Rule 5) triggers size-audit's scope-discrepancy escalation if gaps surface late.
 - **`ticket-discipline.md` Rule 1**: parent + 3 sub-issues is "board-first" multiplied by 4 — all exist before any code is touched.
 - **`ticket-discipline.md` Rule 3**: every contract approval, gate crossing, and handoff is dual-channel (ticket comment + chat summary).
-- **`agent-communication.md`**: parent/sub-issue linking via real GitHub issues, never draft items (F32).
+- **`agent-communication.md`** / **`gh-recipes.md`**: parent/sub-issue linking via real GitHub issues, never draft items (F32).
 - **`secrets-management.md`**: migration callouts include env-var additions; secrets audit pattern applies.
 
 ---
@@ -154,7 +154,7 @@ Parent ticket must have a populated **Migration / gap callouts** section by the 
 |---|---|
 | `@planner` | Drafts FRD with all required sections (Rule 1). Creates parent + 3 sub-issues (Rule 2). Publishes contract, requests approval (Rule 3). Populates migration callouts (Rule 5). |
 | `@tester` | TDD enforcement on both sides before any build (Rule 4). |
-| `@ticket-manager` | Blocks transition into 💻 AI Development until contract gate passes (Rule 3). Validates migration callouts present before allowing gate to close (Rule 5). |
+| `@ticket-manager` | Blocks 🔧 Tech Plan Approved → 💻 AI Development until the contract gate passes (Rule 3). Validates migration callouts present before allowing gate to close (Rule 5). |
 | `@builder` / `@fe-builder` | Re-read migration callouts at build start (Rule 5). Trigger scope-discrepancy if gaps surface. |
 
 ---
@@ -163,7 +163,7 @@ Parent ticket must have a populated **Migration / gap callouts** section by the 
 
 - Pure-doc PRs, CI-only changes, dependency bumps — file a ticket (per `ticket-discipline.md` Rule 1), skip parent-sub structure, skip contract gate.
 - Bug fixes with no new contract surface — one ticket is enough. The contract hasn't changed; the fix just makes the existing contract actually hold.
-- Hotfix lane (🚨 Hotfix) — urgency trumps ceremony. File-first-fix-after is the exception here.
+- Hotfix lane (🚨 Hotfix) — urgency trumps ceremony: ticket first (in 🚨 Hotfix), fix, FRD written retroactively after; no contract gate (`.claude/rules/kanban-workflow.md`, Hotfix Flow).
 
 If you're tempted to skip this flow for something that *is* a real feature: don't. The gate exists because skipping it on "small" features is how mid-build rework happens.
 

@@ -1,0 +1,52 @@
+# Stack config — ERP backend (erp-core)
+#
+# Machine-readable project facts that agents read before working on this repo:
+# operating mode, repo, branches, attribution, staging, stack, test commands,
+# migrations, board and guardrails. Rules in .claude/rules/ link here instead of
+# restating these values.
+#
+# Other projects copy this file and swap the values for their own stack
+# (/aisdlc-init generates it — see .claude/skills/aisdlc-init/SKILL.md).
+
+framework:
+  mode: team                     # solo | team — ERP has two engineers (Rohit, Vijay). See .claude/rules/solo-vs-team-mode.md
+
+project: erp
+repo: RegnusTech/erp-core
+host: github                     # CLI: gh
+local_path: erp-core/            # gitignored clone inside this workspace (own git)
+remote: github                   # git remote name for GitHub; ERP checkouts clone with `git clone -o github ...`
+default_branch: master
+pr_base: "plan/<stream>"         # the stream branch the ticket names (ERP plan tickets: plan/<stream>, e.g. plan/finance); otherwise default_branch
+protected_branches: [master, main, "plan/*"]   # see .claude/rules/source-control.md; agents push only feature/* and hotfix/* branches
+commit_attribution: none         # none | co-author — never add Co-Authored-By / Generated with / Claude-Session lines
+staging: none                    # no staging environment; a human moves Code Review -> Ready for Production (.claude/rules/kanban-workflow.md)
+
+language: java
+language_version: "21"
+framework_stack:
+  name: spring-boot
+  version: "3.5"
+database: postgresql-16
+conventions:
+  response_envelope: ApiResponse
+  errors: "BusinessException(ErrorCode.X), e.g. ErrorCode.MASTER_DATA_DUPLICATE"
+  permissions: '@RequirePermission("resource:action") — roles are IAM policies, never hard-coded tiers'
+  entities: "AuditedEntity + TenantScoped, soft delete"
+  jpa_ddl_auto: validate
+
+test:
+  framework: "JUnit 5 / Spring Boot Test"
+  per_ticket: "REGNUS_TEST_INFRA=local ./mvnw -q test -Dtest=<TouchedTestClasses>"
+  guard_set: "the guard set listed in erp-core/CLAUDE.md (run with every ticket)"
+  docker_only: "classes marked @RequiresDocker skip in local mode; run them in Docker mode or the cloud SD shard"
+  full_suite: "cloud shards only at wave merge or release (never on the shared Mac)"
+
+migrations:
+  tool: flyway
+  register: docs/db/flyway-number-register.md   # in erp-core; claim the number in the same commit
+
+board_config: erp-context/board-config.yml   # project-workspace file (in the gitignored erp-context repo); created by /aisdlc-init setup tickets S2/S3.
+                                             # If it does not exist: do not invent IDs — stop and ask the user to run /aisdlc-init.
+                                             # ERP plan tickets are tracked in the owner's Google Sheet tracker until then (.claude/rules/erp-guardrails.md).
+guardrails: .claude/rules/erp-guardrails.md

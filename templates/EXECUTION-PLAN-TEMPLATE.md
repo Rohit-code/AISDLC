@@ -17,20 +17,20 @@
 
 ### New Endpoints
 
-| Method | Path | Auth | Permissions | Description |
-|--------|------|------|------------|-------------|
-| POST | /resource/ | JWT | IsAuthenticated | Create resource |
-| GET | /resource/{id}/ | JWT | IsAuthenticated, IsOwner | Get resource |
+| Method | Path | Auth | Permission key | Description |
+|--------|------|------|----------------|-------------|
+| POST | /api/<resources> | JWT | `<resource>:create` | Create resource (Idempotency-Key header) |
+| GET | /api/<resources>/{id} | JWT | `<resource>:read` | Get resource (tenant-scoped) |
 
 ### Modified Endpoints
 
 | Method | Path | Change |
 |--------|------|--------|
-| GET | /existing/ | Add new field to response |
+| GET | /api/<existing> | Add new optional field to response (additive, no version bump) |
 
 ### Request/Response Schemas
 
-#### `POST /resource/`
+#### `POST /api/<resources>`
 **Request:**
 ```json
 {
@@ -39,34 +39,45 @@
 }
 ```
 
-**Response 201:**
+**Response 201** (ApiResponse envelope):
 ```json
 {
-  "id": "integer",
-  "field1": "string",
-  "field2": "integer",
-  "created_at": "datetime"
+  "success": true,
+  "message": null,
+  "data": {
+    "id": "uuid",
+    "field1": "string",
+    "field2": "integer",
+    "createdAt": "datetime"
+  },
+  "timestamp": "datetime"
 }
 ```
 
-**Error Responses:**
+**Error Responses** (same envelope; `error.details` and `error.requestId` are optional):
 ```json
 // 400 Bad Request
-{"error": "field1 is required", "code": "VALIDATION_ERROR"}
+{"success": false, "error": {"code": "VAL_001", "message": "Request validation failed", "details": {"field1": "required"}}, "timestamp": "datetime"}
 
-// 403 Forbidden
-{"error": "You do not have permission", "code": "PERMISSION_DENIED"}
+// 403 Forbidden (caller lacks the permission key)
+{"success": false, "error": {"code": "AUTHZ_002", "message": "Insufficient permissions for this operation."}, "timestamp": "datetime"}
 
-// 404 Not Found
-{"error": "Resource not found", "code": "NOT_FOUND"}
+// 404 Not Found (also for another tenant's record)
+{"success": false, "error": {"code": "<MODULE>_00N", "message": "Resource not found"}, "timestamp": "datetime"}
+
+// 409 Conflict
+{"success": false, "error": {"code": "MST_001", "message": "A record with this code already exists"}, "timestamp": "datetime"}
 ```
+`error.code` is the wire code of the project's `ErrorCode` enum (ERP examples: `VALIDATION_FAILED` → `VAL_001`, `PERMISSION_DENIED` → `AUTHZ_002`, `MASTER_DATA_DUPLICATE` → `MST_001`; BE throws `BusinessException(ErrorCode.X)`). Use real codes; add a new enum value when none fits.
 
 ### Permission Matrix
 
-| Endpoint | Customer | Admin | Ops | Finance | Auditor |
-|----------|---------|-------|-----|-------|-------------|
-| POST /resource/ | Yes | Yes | No | No | No |
-| GET /resource/{id}/ | Own only | All | No | No | No |
+Permission keys, not roles: IAM policies grant keys, so never list role names here.
+
+| Endpoint | Permission key | Record scope |
+|----------|----------------|--------------|
+| POST /api/<resources> | `<resource>:create` | Caller's tenant |
+| GET /api/<resources>/{id} | `<resource>:read` | Caller's tenant; other tenant → 404 |
 
 ---
 
@@ -83,6 +94,8 @@
 | invoices / Invoice | Add due_reminder_at (timestamptz, nullable) | Safe — nullable column |
 
 ### Migration Strategy
+- Flyway version claimed: V___ (register `docs/db/flyway-number-register.md` updated in the same commit)
+- Pinned function hash updated: yes / no / n.a. (if a pinned function body changes, its hash pin moves in the same commit)
 - Reversible: Yes/No
 - Backfill needed: Yes/No
 - Lock risk: None / Low / High (specify table + estimated lock time)
@@ -111,9 +124,11 @@
 **Test Plan (TDD — tests written FIRST):**
 | Test | What It Tests | Expected |
 |------|-------------|----------|
-| create_resource_success | POST with valid data | 200 + resource in envelope |
+| create_resource_success | POST with valid data | 201 + resource in envelope |
 | create_resource_missingField_returns400 | POST without required field | 400 + error code |
 | create_resource_unauthenticated_returns401 | POST without session | 401 |
+| create_resource_withoutPermission_returns403 | POST without `<resource>:create` | 403 |
+| create_resource_sameIdempotencyKey_returnsFirst | Repeat POST, same key | Same id, no second row |
 | get_resource_owner | GET own resource | 200 + data |
 | get_resource_otherTenant_notVisible | GET another tenant's resource | 404 |
 
@@ -143,8 +158,13 @@
 **Test Plan:**
 | Test | What It Tests |
 |------|-------------|
-| renders feature card | Component mounts with props |
-| handles empty state | No data shows placeholder |
+| renders feature card | Component mounts with data from the API |
+| handles empty state | No data shows the board's empty-state wording |
+
+**Test runs (targeted + guard set, never the full suite per ticket):**
+- BE: the touched test classes + the repo's guard set (ERP: `REGNUS_TEST_INFRA=local ./mvnw -q test -Dtest=<Classes>`; guard set in erp-core `CLAUDE.md`). The full suite runs only at a wave merge / release.
+- FE: `npx vitest run --maxWorkers=2 <files>` + `npx tsc --noEmit`.
+- Mutation-prove each new behaviour: break it, see the test go red, restore.
 
 ---
 
@@ -153,7 +173,11 @@
 | Order | Repo | What | Depends On |
 |-------|------|------|-----------|
 | 1 | erp-core | Migration + entity + API | Nothing |
-| 2 | erp-fe | UI + API wrapper | BE API deployed to staging |
+| 2 | erp-fe | UI + API wrapper | `[Contract]` approved; FE tests from @tester committed |
+
+Ticket dependencies go in each ticket body as one line: `Depends on: #N` (several: `Depends on: #12, #15`). A dependency is met when its PR is merged (check: `.claude/rules/gh-recipes.md`).
+
+Base branch for each repo's PR: `pr_base` from the stack file (ERP plan tickets: `plan/<stream>`).
 
 ## Risk Assessment
 

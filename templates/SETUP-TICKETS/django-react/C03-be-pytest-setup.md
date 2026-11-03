@@ -40,7 +40,7 @@ Standard Python/Django test stack. factory-boy gives clean fixture creation. con
 
 ## Idempotent check
 ```bash
-test -f $BE_REPO/tests/conftest.py && test -f $BE_REPO/tests/factories.py
+test -f "$BE_REPO/tests/conftest.py" && test -f "$BE_REPO/tests/factories.py"
 ```
 
 ## Acceptance

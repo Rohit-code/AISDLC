@@ -1,12 +1,30 @@
 # Universal setup tickets — apply to every AISDLC project regardless of stack.
-# Init reads this manifest, runs the idempotent_check for each, and creates
-# the ticket if the check fails.
-
-# Variables available in idempotent_check commands:
-#   $PROJECT       — project slug (e.g. "erp", "support-bot")
-#   $CONTEXT_DIR   — path to <project>-context/
-#   $MAIN_REPO     — path to the primary code repo
-#   $BOARD_ID      — GitHub Projects v2 ID (empty until S2 runs)
+# Init (.claude/skills/aisdlc-init/SKILL.md) reads this manifest, then the stack
+# manifest, runs each idempotent_check with `bash -c` from the project workspace
+# root, and creates the ticket if the check fails. Full contract:
+# templates/SETUP-TICKETS/README.md.
+#
+# Variables available in idempotent_check commands (all manifests):
+#   $PROJECT       — project slug (e.g. "erp")
+#   $WORKSPACE     — absolute path of the project workspace root (the check's cwd)
+#   $CONTEXT_DIR   — $WORKSPACE/$PROJECT-context
+#   $MAIN_REPO     — path of the first backend repo in --repos (or the first repo)
+#   $BE_REPO       — path of the backend repo (empty when there is none)
+#   $FE_REPO       — path of the frontend repo; each FE repo in turn when runs_per: frontend_repo
+#   $BOARD_ID      — board.project_id from $CONTEXT_DIR/board-config.yml (empty until S2/S3)
+#
+# Keys per ticket:
+#   id               — unique across all manifests (S* here; J*, C*, V* in stacks)
+#   title            — issue title; init prefixes the id ("S4 [setup] ...")
+#   template         — ticket body file in this directory
+#   priority         — P0 | P1 | P2 | P3
+#   owner            — Product | Tech | AI
+#   idempotent_check — one bash command, exit 0 = already done; glob-safe
+#                      (`ls <glob> >/dev/null 2>&1`, never `test -f <glob>`)
+#   depends_on       — list of ids ([] when none)
+#   applies_to       — optional: backend | frontend | fullstack (omitted = always)
+#   runs_per         — optional: frontend_repo | backend_repo (once per repo of that type)
+# Stack manifests may also carry `overrides: - skip: <S id>` to drop a ticket here.
 
 tickets:
   - id: S1
@@ -14,7 +32,7 @@ tickets:
     template: S01-context-repo.md
     priority: P1
     owner: Tech
-    idempotent_check: "test -f $CONTEXT_DIR/CLAUDE.md"
+    idempotent_check: 'test -f "$CONTEXT_DIR/CLAUDE.md"'
     depends_on: []
 
   - id: S2
@@ -22,23 +40,23 @@ tickets:
     template: S02-project-board.md
     priority: P1
     owner: Tech
-    idempotent_check: "test -n \"$BOARD_ID\""
+    idempotent_check: 'test -n "$BOARD_ID"'
     depends_on: []
 
   - id: S3
-    title: "[setup] Register project in .claude/board-config.yml"
+    title: "[setup] Record board IDs in <project>-context/board-config.yml"
     template: S03-board-config.md
     priority: P1
     owner: Tech
-    idempotent_check: "grep -q \"$PROJECT\" .claude/board-config.yml"
-    depends_on: [S2]
+    idempotent_check: 'grep -qE "^[[:space:]]*status_field_id:[[:space:]]*PVTSSF_" "$CONTEXT_DIR/board-config.yml" 2>/dev/null && grep -qE "^[[:space:]]*backlog:[[:space:]]*[0-9a-f]+" "$CONTEXT_DIR/board-config.yml"'
+    depends_on: [S1, S2]
 
   - id: S4
     title: "[setup] Clone code repo(s) into workspace"
     template: S04-clone-repos.md
     priority: P1
     owner: Tech
-    idempotent_check: "test -d $MAIN_REPO/.git"
+    idempotent_check: 'test -e "$MAIN_REPO/.git"'
     depends_on: []
 
   - id: S5
@@ -46,7 +64,7 @@ tickets:
     template: S05-secrets-audit.md
     priority: P0
     owner: AI
-    idempotent_check: "grep -q '^\\.env$' $MAIN_REPO/.gitignore && ! git -C $MAIN_REPO ls-files | grep -qE '^\\.env$'"
+    idempotent_check: 'grep -qxF .env "$MAIN_REPO/.gitignore" 2>/dev/null && ! git -C "$MAIN_REPO" ls-files --error-unmatch .env >/dev/null 2>&1'
     depends_on: [S4]
 
   - id: S6
@@ -54,7 +72,7 @@ tickets:
     template: S06-env-example.md
     priority: P1
     owner: AI
-    idempotent_check: "test -f $MAIN_REPO/.env.example"
+    idempotent_check: 'test -f "$MAIN_REPO/.env.example"'
     depends_on: [S4, S5]
 
   - id: S7
@@ -62,7 +80,7 @@ tickets:
     template: S07-local-dev-env.md
     priority: P1
     owner: AI
-    idempotent_check: "test -f $MAIN_REPO/docker-compose.yml || test -f $MAIN_REPO/Makefile"
+    idempotent_check: 'test -f "$MAIN_REPO/docker-compose.yml" || test -f "$MAIN_REPO/compose.yaml" || test -f "$MAIN_REPO/Makefile"'
     depends_on: [S4, S6]
 
   - id: S8
@@ -70,7 +88,7 @@ tickets:
     template: S08-claude-md.md
     priority: P1
     owner: AI
-    idempotent_check: "test -f $MAIN_REPO/CLAUDE.md"
+    idempotent_check: 'test -f "$MAIN_REPO/CLAUDE.md"'
     depends_on: [S4]
 
   - id: S9
@@ -78,31 +96,31 @@ tickets:
     template: S09-stack-config.md
     priority: P1
     owner: Tech
-    idempotent_check: "ls .claude/stack-*.yml 2>/dev/null | head -1 | grep -q ."
+    idempotent_check: 'ls .claude/stack-*.yml >/dev/null 2>&1 && cat .claude/stack-*.yml | grep -qE "^[[:space:]]+mode:[[:space:]]*(solo|team)"'
     depends_on: []
 
   - id: S10
-    title: "[setup] Create release/ai-sdlc-v1 branch on each repo"
-    template: S10-release-branch.md
-    priority: P2
-    owner: AI
-    idempotent_check: "git -C $MAIN_REPO branch -a | grep -q release/ai-sdlc-v1"
-    depends_on: [S4]
+    title: "[setup] Record default branch + protected branches; protect the default branch"
+    template: S10-default-branch.md
+    priority: P1
+    owner: Tech
+    idempotent_check: 'cat .claude/stack-*.yml 2>/dev/null | grep -qE "^default_branch:[[:space:]]*[A-Za-z0-9._/-]+" && cat .claude/stack-*.yml | grep -qE "^protected_branches:"'
+    depends_on: [S4, S9]
 
   - id: S11
-    title: "[setup] Generate Product Wiki — main code repo"
+    title: "[setup] Generate Product Wiki in <project>-context/docs/"
     template: S11-product-wiki.md
     priority: P1
     owner: AI
-    idempotent_check: "test -f $MAIN_REPO/docs/Product-Wiki.md"
-    depends_on: [S4, S8]
+    idempotent_check: 'test -f "$CONTEXT_DIR/docs/Product-Wiki.md"'
+    depends_on: [S1, S4, S8]
 
   - id: S12
     title: "[setup] Generate Tech Architecture docs (per stack)"
     template: S12-tech-architecture.md
     priority: P1
     owner: AI
-    idempotent_check: "ls $MAIN_REPO/docs/TECH-Architecture-*.md 2>/dev/null | head -1 | grep -q ."
+    idempotent_check: 'ls "$CONTEXT_DIR"/docs/TECH-Architecture-*.md >/dev/null 2>&1'
     depends_on: [S4, S11]
 
   - id: S13
@@ -110,7 +128,7 @@ tickets:
     template: S13-codebase-indexes.md
     priority: P1
     owner: AI
-    idempotent_check: "ls $CONTEXT_DIR/indexes/Codebase-Index-*.md 2>/dev/null | head -1 | grep -q ."
+    idempotent_check: 'ls "$CONTEXT_DIR"/indexes/Codebase-Index-*.md >/dev/null 2>&1'
     depends_on: [S1, S4]
 
   - id: S14
@@ -118,7 +136,7 @@ tickets:
     template: S14-test-infrastructure.md
     priority: P1
     owner: AI
-    idempotent_check: "grep -qE 'pytest|vitest|jest|go test' $MAIN_REPO/package.json $MAIN_REPO/pyproject.toml $MAIN_REPO/requirements*.txt 2>/dev/null"
+    idempotent_check: '{ test -f "$MAIN_REPO/pom.xml" || ls "$MAIN_REPO"/build.gradle* >/dev/null 2>&1; } && test -d "$MAIN_REPO/src/test" || cat "$MAIN_REPO/package.json" "$MAIN_REPO/pyproject.toml" "$MAIN_REPO"/requirements*.txt 2>/dev/null | grep -qE "pytest|vitest|jest" || find "$MAIN_REPO" -name "*_test.go" -print 2>/dev/null | grep -q .'
     depends_on: [S4, S7]
 
   - id: S15
@@ -126,5 +144,5 @@ tickets:
     template: S15-contracts-dir.md
     priority: P2
     owner: Tech
-    idempotent_check: "test -d $CONTEXT_DIR/contracts"
+    idempotent_check: 'test -d "$CONTEXT_DIR/contracts"'
     depends_on: [S1]

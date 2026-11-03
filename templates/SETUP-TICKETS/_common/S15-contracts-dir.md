@@ -18,7 +18,7 @@ Contracts are the single source of truth for BE/FE (or client/server) interfaces
 
 ## Idempotent check
 ```bash
-test -d $CONTEXT_DIR/contracts
+test -d "$CONTEXT_DIR/contracts"
 ```
 
 ## Acceptance

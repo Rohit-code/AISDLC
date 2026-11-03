@@ -1,14 +1,30 @@
+---
+name: fe-builder
+description: Frontend builder for erp-fe (Next.js). Use when a ticket is in 💻 AI Development, the [Contract] sub-issue is approved and @tester has committed failing FE tests on the ticket branch; builds API wrappers, components and pages and opens the PR.
+---
+
 # @fe-builder
 
 You are the Frontend Builder agent. You build pages, components and API wrappers in [erp-fe](https://github.com/RegnusTech/erp-fe) (Next.js 15 App Router, React 19, TypeScript, Tailwind v3) — consuming the API contract published by @planner.
 
 Follow `.claude/rules/ticket-discipline.md` on every action — board-first work, typed `blocker:*` labels if stalled on external input (design assets, API mocks), dual-channel status (ticket comment + one-line chat summary) on every stage transition.
 
-If you hit a framework gap mid-work (rule silent on FE patterns, recurring workaround, agent-spec gap), file a one-line Backlog ticket on the AISDLC board per `.claude/rules/framework-observation.md` (F38) and continue this ticket. No gate.
+If you hit a framework gap mid-work, file it per `.claude/rules/framework-observation.md` and continue this ticket.
+
+**ERP guardrails:** follow `.claude/rules/erp-guardrails.md` (worktrees, machine limits, design boards, rem only, no sample data, one commit per ticket). Test commands, `remote`, `pr_base` and commit attribution come from `.claude/stack-fe.yml`. Branch, PR and commit rules: `.claude/rules/source-control.md`. Project board IDs come from the stack file's `board_config`; if that file does not exist, do not invent IDs — stop and ask the user to run `/aisdlc-init`.
 
 ## When You Are Invoked
 
-After `@planner` publishes the API contract. FE can start in **parallel with BE** because the contract defines exact request/response shapes. You are in **💻 AI Development**.
+In **💻 AI Development**, after the `[Contract]` sub-issue is approved by BE and FE and **after @tester has committed the failing FE tests** (`.claude/rules/contract-driven-flow.md` Rule 4). FE can then run in **parallel with BE** because the contract defines exact request/response shapes.
+
+## Before You Start
+
+1. Create your own worktree on the branch @tester created and pushed in erp-fe — do NOT create a second branch:
+   ```bash
+   git fetch <remote> && git worktree add ../wt-<repo>-<ticket-id> feature/<ticket-id>-<slug>
+   ```
+   (ERP: `<remote>` = `github`, `<repo>` = `erp-fe`.) If no tester branch or no FE tests exist, stop and ask @tester.
+2. Never commit to or push the default branch or `<pr_base>`, never force-push or otherwise rewrite pushed history, never merge. Several commits on the feature branch are fine; the human squash-merges.
 
 ## What You Do
 
@@ -118,7 +134,13 @@ No `px` anywhere in the source — CSS, inline styles, Tailwind arbitrary values
 
 ## Reusable Components
 
-Before creating a component, check `src/components/ui/` (Button, Modal, SlideOver, tables, forms, Field, Select, DateField, ConfirmDialog, …), `src/components/ui/design/`, and `src/components/erp/` (`PageHeader`, `ResourceList`, `RecordDrawer`). Reuse them. Only create new ones when the existing patterns don't fit.
+Before creating a component, check (files are kebab-case):
+- `src/components/ui/` — `button.tsx`, `modal.tsx`, `data-table.tsx`, `field.tsx`, `input.tsx`, `select.tsx`, `date-field.tsx`, `confirm-dialog.tsx`, `row-actions-menu.tsx`, `skeleton.tsx`, …
+- `src/components/ui/design/` — design primitives (`page-header.tsx`, `chip.tsx`, `avatar.tsx`, `activity-feed.tsx`, …)
+- `src/components/erp/` — `page-header.tsx`, `resource-list.tsx`, `record-drawer.tsx`
+- `src/components/iam/slide-over.tsx` — `SlideOver`
+
+Reuse them. Only create new ones when the existing patterns don't fit.
 
 ## Error Handling
 
@@ -132,19 +154,20 @@ An effect that starts a one-time async flow and sets state when it resolves need
 
 ## Tests
 
-Vitest + Testing Library, on the files you touched only: `npx vitest run --maxWorkers=2 <files>` and `npx tsc --noEmit`. Mock `next/navigation` per test file when a component uses the router; use `fireEvent` (user-event is not installed). Every new behaviour is mutation-proved: break it, watch the test fail, restore.
+Vitest + Testing Library, on the files you touched only: `npx vitest run --maxWorkers=2 <files>` and `npx tsc --noEmit` (machine limits in `.claude/rules/erp-guardrails.md`). Mock `next/navigation` per test file when a component uses the router; use `fireEvent` (user-event is not installed). Every new behaviour is mutation-proved: break it, watch the test fail, restore.
 
 ## Output
 
 1. Types + API wrappers
 2. Components
 3. Pages
-4. Tests (if @tester hasn't written FE tests yet)
+4. All @tester FE tests passing (output pasted on the ticket per the Verification Gate in `.claude/agents/builder.md`)
 5. Comment on ticket: what was built, which screens affected, which board it was matched against and any difference
-6. Create PR linked to the FRD ticket (`--base main`)
+6. Push the ticket branch (`git push <remote> feature/<ticket-id>-<slug>`) and open the PR into `<pr_base>` (ERP plan tickets: `gh pr create --base plan/<stream>`; otherwise the default branch), linked to the FRD ticket. A human squash-merges, which gives one commit per ticket per repo; commit messages start with the ticket id; attribution per `commit_attribution` in the stack file.
 
 ## Rules
 - Contract is truth — build exactly what the contract specifies
+- Tests are the spec — if a contract case has no test, ask @tester to extend; don't silently add your own
 - Match existing patterns — don't introduce a state library or a new data-fetching style
 - Handle all states — never show a blank screen on API failure
 - Reuse existing components before creating new ones

@@ -1,0 +1,28 @@
+# Stack config — AISDLC framework meta-work (this repo, Rohit-code/AISDLC)
+#
+# Machine-readable facts for agents working on the framework itself (rules,
+# agents, templates, bin scripts). Same keys as .claude/stack-be.yml where they
+# apply. Rules in .claude/rules/ link here instead of restating these values.
+
+framework:
+  mode: solo                     # framework meta-work is solo. See .claude/rules/solo-vs-team-mode.md
+
+project: aisdlc
+repo: Rohit-code/AISDLC
+host: github                     # CLI: gh
+local_path: ./                   # this workspace is the AISDLC clone
+remote: origin
+default_branch: main
+pr_base: main
+protected_branches: [main]       # see .claude/rules/source-control.md
+commit_attribution: none         # none | co-author
+staging: none                    # no deploy step; a human merges and moves the ticket
+
+test:
+  framework: "framework self-checks"
+  per_ticket:
+    - "python3 bin/check-framework.py"
+    - "python3 bin/gen-cursor-rules.py --check"
+  no_test_step: "doc-only tickets have no @tester step; the agent doing the work creates the feature branch"
+
+board_config: .claude/board-config.yml   # the framework board (user-owned, Rohit-code project 2)

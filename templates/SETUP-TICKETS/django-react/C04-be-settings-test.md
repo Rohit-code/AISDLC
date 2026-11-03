@@ -39,7 +39,7 @@ Also disables external services (email, file storage, 3rd-party APIs) so tests a
 
 ## Idempotent check
 ```bash
-test -f $BE_REPO/*/settings_test.py 2>/dev/null
+ls "$BE_REPO"/*/settings_test.py >/dev/null 2>&1
 ```
 
 ## Acceptance

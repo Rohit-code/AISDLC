@@ -29,7 +29,7 @@ Multiple FE repos drifting on colors/spacing is a common problem (document it in
 
 ## Idempotent check
 ```bash
-grep -q '@theme\|theme.extend' $FE_REPO/tailwind.config.* $FE_REPO/src/index.css 2>/dev/null
+cat "$FE_REPO"/tailwind.config.* "$FE_REPO/src/index.css" 2>/dev/null | grep -qE "@theme|theme\.extend|extend:"
 ```
 
 ## Acceptance

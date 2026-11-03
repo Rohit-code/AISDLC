@@ -10,25 +10,25 @@ Tech Architecture captures design decisions, module boundaries, data flow, and n
 1. Identify architecture scopes from stack config (typically: BE, FE, Voice, Mobile)
 2. For each scope, invoke `@planner` in architecture mode
 3. Agent generates from codebase scan + Product Wiki:
-   - `<be-repo>/docs/TECH-Architecture-BE.md`
-   - `<fe-repo>/docs/TECH-Architecture-FE.md`
+   - `<project>-context/docs/TECH-Architecture-BE.md`
+   - `<project>-context/docs/TECH-Architecture-FE.md`
    - (Voice/S2S: covered by V2 in voice-s2s variant)
 4. Each doc covers:
    - **Overview** — high-level components and relationships
-   - **Module layout** — apps/packages and their responsibilities
+   - **Module layout** — modules/packages and their responsibilities
    - **Data flow** — request lifecycle, queue processing, batch jobs
    - **External integrations** — 3rd-party APIs, auth providers, CDNs
    - **Design decisions** — why this pattern vs alternatives
    - **Conventions** — error handling, logging, testing
-5. Commit to respective code repos
+5. Commit to the context repo
 
 ## Idempotent check
 ```bash
-ls $MAIN_REPO/docs/TECH-Architecture-*.md 2>/dev/null | head -1 | grep -q .
+ls "$CONTEXT_DIR"/docs/TECH-Architecture-*.md >/dev/null 2>&1
 ```
 
 ## Acceptance
-- Tech Architecture doc(s) exist in appropriate code repos
+- Tech Architecture doc(s) exist in `<project>-context/docs/`
 - At least one doc per stack scope (BE, FE, Voice, etc.)
 - Committed
 - Depth: a new engineer can understand the architecture in 30 minutes

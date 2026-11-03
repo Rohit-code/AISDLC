@@ -20,9 +20,9 @@ You do:
 AI does:
 - Writes the code (BE + FE), under your review.
 - Writes failing tests from the contract first (TDD — tests land before code).
-- Writes commit messages, PR / MR descriptions, release notes.
+- Writes commit messages, PR descriptions, release notes.
 - Moves tickets through the board, tags product when something's blocked on them.
-- Opens PRs / MRs, runs the Verification Gate, deploys to staging.
+- Opens PRs, runs the Verification Gate, deploys to staging (when the project has one).
 - Files tickets when you describe a feature in chat.
 - Files framework-gap tickets on the AISDLC board when the rules are silent on a case.
 
@@ -42,15 +42,15 @@ Pick **one** of:
 Plus:
 
 - `gh` — `brew install gh` (or your distro's equivalent). Then `gh auth login`.
-- `glab` — `brew install glab`, then `glab auth login --hostname gitlab.com` with a PAT that has `api`, `read_user`, `read_repository`, `write_repository`.
-- SSH keys for github.com and gitlab.com (you probably already have these).
+- SSH key for github.com (you probably already have one).
+- GitLab-hosted clients: use the `glab` equivalents of the `gh` commands in this guide.
 
 That's it. No framework install. The framework is just a git repo you cloned with the project.
 
-Smoke test:
+Smoke test (framework board, then your project board; `<owner>` is a user login or an org):
 
 ```bash
-cd <project>/
+gh project item-list 2 --owner Rohit-code --format json | head
 gh project item-list <project_number> --owner <owner> --format json | head
 ```
 
@@ -61,15 +61,13 @@ If that lists tickets, you're ready.
 ## The shape of a project
 
 ```
-<project>/                    ← workspace folder (not a git repo)
-├── aisdlc/                   ← the framework — don't edit, ever
-├── <project>-context/        ← contracts, indexes, decisions (internal)
-├── <project>-be/             ← backend code (you'll work here)
-├── <project>-fe/             ← frontend code
-├── <project>-<service>/      ← other services
+AISDLC/                       ← the workspace IS the framework clone — don't edit the framework files
 ├── CLAUDE.md / AGENTS.md     ← read this once; it orients the AI
-├── .claude/                  ← AI config for Claude Code
-└── .cursor/                  ← AI config for Cursor
+├── .claude/                  ← agents, rules, stack files (project facts), framework board config
+├── .cursor/                  ← generated Cursor rules
+├── <project>-context/        ← contracts, indexes, docs, project board-config.yml (own git, gitignored)
+├── <project>-be/             ← backend code, you'll work here (own git, gitignored; ERP: erp-core/)
+└── <project>-fe/             ← frontend code (own git, gitignored; ERP: erp-fe/)
 ```
 
 Every code repo has its own `AGENTS.md` pointing at its `CLAUDE.md`. Both contain the same thing — a cheat sheet for the AI.
@@ -84,7 +82,7 @@ Assume you're picking up a new feature.
 
 Features always live on the project board before any code is touched. If someone describes a feature in Slack or chat, tell the AI:
 
-> *"Create a ticket: we need multi-currency support on checkout. BE needs price recalculation, FE needs currency selector."*
+> *"Create a ticket: we need multi-currency support on invoices. BE needs amount recalculation, FE needs a currency selector."*
 
 AI drafts a parent ticket using the FRD template, asks clarifying questions as ticket comments (not as chat interruptions), and replies in chat with:
 
@@ -92,9 +90,9 @@ AI drafts a parent ticket using the FRD template, asks clarifying questions as t
 
 ### 2. Triage promotes it
 
-Triage lead (or in solo mode, AI) moves it from 📥 Backlog → 📝 FRD Draft.
+Triage lead (or in solo mode, AI) moves it from 📥 Backlog → 📝 FRD Draft. Who may move what, per mode: `.claude/rules/kanban-workflow.md`.
 
-### 3. `@planner` writes the FRD Tech Plan + contract
+### 3. `@planner` writes the tech plan + contract (🤖 FRD Tech Plan)
 
 AI produces:
 - Execution plan on the ticket.
@@ -103,31 +101,30 @@ AI produces:
 
 ### 4. You approve the contract (**this is important**)
 
-Before anyone writes code, **both the BE dev and the FE dev approve the `[Contract]` sub-issue**. Comment "approved" on the ticket, or raise issues to fix. This is the validation gate — it saves the day when FE expects `snake_case` and BE ships `camelCase`.
+Before anyone writes code, **both the BE dev and the FE dev approve the `[Contract]` sub-issue** (approve, then close it). The parent cannot move 🔧 Tech Plan Approved → 💻 AI Development until that sub-issue is closed. This is the validation gate — it saves the day when FE expects `snake_case` and BE ships `camelCase`.
 
 ### 5. `@tester` writes failing tests
 
-From the contract. BE gets pytest, FE gets RTL/Vitest. They fail. That's TDD.
+From the contract, on the ticket's branch `feature/<id>-<slug>`. BE gets the stack's test runner (ERP: JUnit via `./mvnw`), FE gets Vitest + Testing Library. They fail. That's TDD.
 
 ### 6. `@builder` / `@fe-builder` makes them pass
 
-Often runs autonomously in solo mode. You review the code — that's the part AI shouldn't own.
+On the same branch @tester created (never a second one). Often runs autonomously in solo mode. You review the code — that's the part AI shouldn't own.
 
 ### 7. Verification Gate
 
 Tests green, lints clean, build succeeds. Pasted output on the ticket. If anything fails, AI stops and asks.
 
-### 8. `@shipper` opens the PR / MR, merges to release branch
+### 8. The PR goes to the default branch
 
-- **GitHub repos** → `gh pr create`.
-- **GitLab repos** → `glab mr create`.
-- Target is `release/ai-sdlc-v1` (or whatever your project declares). **Never master/main/dev.**
+- `gh pr create --base <default branch>` (erp-core `master`, erp-fe `main`).
+- AI never commits or pushes to the default branch, never force-pushes, never merges. A human merges.
 
-In solo mode, AI merges. In team mode, it waits for your review.
+Full branch / PR / commit rules: `.claude/rules/source-control.md`.
 
 ### 9. Staging deploy + release notes
 
-`@shipper` deploys to staging, runs smoke tests, writes release notes.
+If the stack file defines staging, `@shipper` deploys to staging, runs smoke tests, writes release notes. If it says `staging: none` (ERP), a human moves 👀 Code Review → 🚀 Ready for Production directly.
 
 ### 10. You push to prod
 
@@ -139,8 +136,8 @@ You review the release notes, you push. That's your button.
 
 Short, direct, feature-oriented. Examples that work:
 
-- *"Work on #45"* → AI picks it up from whatever column it's in.
-- *"This is blocked on the payment gateway webhook secret from client"* → AI files a blocker comment on the active ticket, tags product team, applies `blocker:client-input` label.
+- *"Work on #45"* → AI works on it only if the column allows it: in team mode the ticket must already be in an AI-active column (a human moved it there); otherwise AI says which human move is needed (`.claude/rules/kanban-workflow.md`).
+- *"This is blocked on the bank's virtual-account API credentials from the client"* → AI files a blocker comment on the active ticket, tags product team, applies `blocker:client-input` label.
 - *"Review your work on #45"* → AI summarizes what it shipped, what's pending, and what you should look at.
 - *"Split this into two PRs"* → AI honors the `size-audit` rule and does it.
 - *"Stop, revert that change"* → AI reverts.
@@ -155,12 +152,12 @@ Examples that don't work:
 
 These are non-negotiable. AI enforces them. So do you.
 
-1. **Never push to `master` / `main` / `dev`.** Release branches only (`release/ai-sdlc-v1` etc.).
+1. **Never push to the default branch** (`master` / `main` or any `protected_branches` in the stack file). Work on `feature/<id>-<slug>`, PR into `pr_base` from the stack file (the default branch, or the ticket's stream branch such as ERP `plan/<stream>`), a human squash-merges.
 2. **Never commit `.env` or secrets.** Ever. If you spot committed secrets in a repo, file a P0 ticket and don't fix silently — key rotation is a coordinated action.
 3. **Every feature via the board.** No "quick hack" path. If it's quick enough to skip a ticket, it's quick enough to write a 30-second ticket.
 4. **Blocked? Log it immediately** with the right label and @-tag. Don't hold blockers in your head.
 5. **Size audit is a feature.** If AI refuses to touch a 3,000 LOC file and files a tech-debt ticket first, that's the framework working. Pick the narrowed scope.
-6. **Done column = merged to master + deployed.** Only humans move tickets to Done.
+6. **Done column = merged to the default branch + deployed** (or merged, when there is no deploy step). Only humans move tickets to 🚀 Ready for Production or ✅ Done.
 
 ---
 
@@ -169,7 +166,7 @@ These are non-negotiable. AI enforces them. So do you.
 When you or AI hits something outside the dev team — client input, API keys, 3rd-party, design, data — it goes on the ticket:
 
 ```
-**Blocked**: credentials — waiting on payment gateway webhook secret from client.
+**Blocked**: credentials — waiting on the bank's virtual-account API credentials from the client.
 Waiting on: @product-lead. Started <YYYY-MM-DD>.
 ```
 
@@ -196,10 +193,10 @@ If you see AI filing a ticket on the framework board mid-task, that's expected b
 
 ## Operating modes
 
-Every project declares one in `.claude/stack-*.yml`:
+Every project declares one in `framework.mode` in `.claude/stack-*.yml` (missing = team):
 
-- **Solo mode** → AI runs autonomously. Moves tickets, merges to release, the works. You observe and unblock.
-- **Team mode** → AI waits for humans at every column transition. Use this when 2+ humans coordinate (most client engagements).
+- **Solo mode** → AI runs autonomously and may move tickets into AI-active columns. It still never merges, never moves to 🚀 Ready for Production / ✅ Done. You observe and unblock.
+- **Team mode** → only humans move a ticket into an AI-active column. Use this when 2+ humans coordinate (the ERP project is team mode).
 
 You don't usually change modes. The triage lead sets it once per project.
 
@@ -235,7 +232,7 @@ Escape hatches first, debate the framework later.
 
 2. **Large binary files.** Someone will push a SQL dump or DB backup to a repo. Framework won't catch this until it's merged. If you see one pushed recently, file a ticket to clean history (someone will need to coordinate).
 
-3. **Red-threshold monoliths.** File > 1500 LOC, ViewSet > 25 actions, component > 300 LOC. AI refuses to extend them without a tech-debt ticket. That ticket lives forever until someone cleans it up — don't ignore it.
+3. **Red-threshold monoliths.** Oversized files, controllers and components (thresholds in `.claude/rules/size-audit.md`). AI refuses to extend them without a tech-debt ticket. That ticket lives forever until someone cleans it up — don't ignore it.
 
 4. **Context-switch temptation.** You'll be tempted to bypass the board for "just a tiny fix." Don't. AI logs everything on tickets, and 3 months from now the board is the only place state lives.
 
@@ -244,8 +241,11 @@ Escape hatches first, debate the framework later.
 ## First 30 minutes on a new project
 
 ```bash
-# 1. Clone (if you haven't already — usually `aisdlc init` did this for you)
-cd <project>/
+# 1. Clone the workspace and the project repos (`/aisdlc-init` does not clone —
+#    it files setup tickets; the clone step is setup ticket S4). ERP:
+git clone git@github.com:Rohit-code/AISDLC.git AISDLC && cd AISDLC
+git clone -o github git@github-regnus-tech:RegnusTech/erp-core.git erp-core   # others: git@github.com:RegnusTech/erp-core.git
+git clone -o github git@github-regnus-tech:RegnusTech/erp-fe.git erp-fe
 
 # 2. Check you can see the board
 gh project item-list <project_number> --owner <owner> --format json | head
@@ -258,7 +258,7 @@ gh project item-list <project_number> --owner <owner> --format json | head
 
 # 5. Let AI walk it through. Review the PR when it appears.
 
-# 6. Merge. Tell us what felt wrong.
+# 6. Merge it yourself (AI never merges). Tell us what felt wrong.
 ```
 
 That last step matters. The framework gets better through the F38 loop — your friction becomes a framework ticket.

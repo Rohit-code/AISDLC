@@ -14,7 +14,7 @@ For each repo:
 2. Check `.env` is not tracked: `git ls-files .env` → must be empty
 3. Scan committed files for key patterns:
    - `sk-`, `pk_live_`, `sk_live_`, `AKIA`, `ghp_`, `sk-ant-api03-`
-   - Common files: `docker-compose*.yml`, `settings*.py`, `config*.js`, `.env*`
+   - Common files: `docker-compose*.yml`, `application*.yml`, `application*.properties`, `settings*.py`, `config*.js`, `next.config.*`, `.env*`
 4. If secrets found:
    - **STOP** — do not paste keys in ticket comments
    - Create separate P0 ticket naming affected files and services (not the keys)
@@ -24,7 +24,7 @@ For each repo:
 
 ## Idempotent check
 ```bash
-grep -q '^\.env$' $MAIN_REPO/.gitignore && ! git -C $MAIN_REPO ls-files | grep -qE '^\.env$'
+grep -qxF .env "$MAIN_REPO/.gitignore" 2>/dev/null && ! git -C "$MAIN_REPO" ls-files --error-unmatch .env >/dev/null 2>&1
 ```
 
 ## Acceptance

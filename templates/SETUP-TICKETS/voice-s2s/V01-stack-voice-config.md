@@ -12,7 +12,11 @@ Create `.claude/stack-voice.yml`:
 ```yaml
 project: <project-slug>
 framework:
-  mode: solo  # solo | team
+  mode: solo  # solo | team (missing = team)
+default_branch: main
+protected_branches: [main]
+commit_attribution: none   # none | co-author
+staging: none              # none, or the staging URL / deploy command
 
 stack:
   type: voice-s2s
@@ -71,4 +75,4 @@ test -f .claude/stack-voice.yml
 - `latency_budget.target_ms` declared (critical — all future perf work references this)
 - `session.reconnect_strategy` declared
 - Repos listed
-- Committed to AISDLC repo
+- Committed to the workspace repo that holds `.claude/`

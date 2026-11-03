@@ -30,15 +30,14 @@ These C-tickets layer on top of the universal S-tickets. They fill in django-rea
 ## Invoked by
 
 ```bash
-/aisdlc-init <project> --stack=django-react --repos=be,fe-web,fe-admin
+/aisdlc-init <project> --stack=django-react --repos=<project>-be:be,<project>-web:fe,<project>-admin:fe
 ```
 
-Where `--repos` is a comma-separated list of repo types. Init creates the appropriate C-tickets based on which repos are declared.
+`--repos` lists the workspace repo directories with their type (format: `../README.md`). Init creates the C-tickets that apply to the declared repo types; per-FE tickets run once per FE repo.
 
-## Sibling stack variants (future)
+## Sibling stack variants
 
-Same shape as this variant, different stack combos. Add as needed:
-- `express-next/` — Node.js Express + Next.js
-- `fastapi-react/` — Python FastAPI + React
-- `rails-vue/` — Ruby on Rails + Vue
-- `go-react/` — Go backend + React
+- `spring-next/` — Spring Boot + Next.js
+- `voice-s2s/` — streaming voice (OpenAI Realtime)
+
+Future variants keep the same shape: `express-next/`, `fastapi-react/`, `rails-vue/`, `go-react/`.

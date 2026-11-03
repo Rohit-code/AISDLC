@@ -1,38 +1,41 @@
 # S14: Test infrastructure — runnable test command
 
 ## What
-Every repo must have a working test runner — pytest for Python, vitest/jest for JS, go test for Go, etc. Test command documented in CLAUDE.md.
+Every repo must have a working test runner, and its per-ticket test command recorded in the stack file (`test.per_ticket`) and the repo's CLAUDE.md.
 
 ## Why
-Verification gate (hard rule): no ticket moves to Code Review without pasted test output. If there's no test runner, there's no way to verify. This ticket unblocks all future AI-development tickets.
+Verification Gate (full text: `.claude/agents/builder.md`, section "Verification Gate"): no ticket moves to 👀 Code Review without pasted test output. If there's no test runner, there's no way to verify. This ticket unblocks all future AI-development tickets.
 
 ## Steps
-Per stack:
+Follow the block for the repo's stack only; the stack variant ticket has the details.
 
-**Python/Django (django-react)**:
-1. Install pytest, pytest-django, factory-boy
-2. Add `pyproject.toml` or `pytest.ini` config
-3. Create `tests/` directory with `conftest.py` + `factories.py`
-4. Add `settings_test.py` (follow the repo's existing test settings pattern)
-5. Verify: `pytest --collect-only` discovers tests
+**Java / Spring Boot (spring-next — see J03)**:
+1. JUnit 5 + Spring Boot Test via the Maven wrapper (`./mvnw`) or Gradle wrapper (`./gradlew`)
+2. Integration tests against real Postgres (Testcontainers, or a local mode such as `REGNUS_TEST_INFRA=local`)
+3. Verify: `./mvnw -q test -Dtest=<SmokeTest>` passes
 
-**React/Next (django-react)**:
-1. Install vitest or jest + testing-library
-2. Add test config to `vite.config.ts` or `jest.config.js`
-3. Create `src/test/setup.ts`
-4. Verify: `npm test` runs
+**Python / Django (django-react — see C3, C4)**:
+1. pytest + pytest-django + factory-boy, `settings_test.py` on Postgres
+2. Verify: `pytest --collect-only` discovers tests
 
-**Voice/Realtime (voice-s2s)**:
-1. See V4 — voice test infra is different (audio fixtures + mock Realtime API)
+**Next.js / React (spring-next J07, django-react C7)**:
+1. Vitest + Testing Library, `src/test/setup.ts`
+2. Verify: `npx vitest run --maxWorkers=2 <file>` and `npx tsc --noEmit` pass
+
+**Go**: `go test ./...` passes.
+
+**Voice/Realtime (voice-s2s)**: see V4 (audio fixtures + mock Realtime API).
+
+Run only targeted tests per ticket plus the repo's guard set; the full suite runs at merge/release time, not per ticket.
 
 ## Idempotent check
 ```bash
-grep -qE 'pytest|vitest|jest|go test' $MAIN_REPO/package.json $MAIN_REPO/pyproject.toml $MAIN_REPO/requirements*.txt 2>/dev/null
+{ test -f "$MAIN_REPO/pom.xml" || ls "$MAIN_REPO"/build.gradle* >/dev/null 2>&1; } && test -d "$MAIN_REPO/src/test" || cat "$MAIN_REPO/package.json" "$MAIN_REPO/pyproject.toml" "$MAIN_REPO"/requirements*.txt 2>/dev/null | grep -qE "pytest|vitest|jest" || find "$MAIN_REPO" -name "*_test.go" -print 2>/dev/null | grep -q .
 ```
 
 ## Acceptance
 - Test runner installed
-- `make test` or `npm test` or `pytest` works from repo root
+- The per-ticket command (`./mvnw -q test -Dtest=...`, `pytest <path>`, `npx vitest run --maxWorkers=2 <file>`, `go test ./<pkg>`) works from repo root
 - At least one passing test (smoke test) — proves infra works
-- Command documented in repo CLAUDE.md
+- Command recorded in the stack file (`test.per_ticket`) and repo CLAUDE.md
 - Committed

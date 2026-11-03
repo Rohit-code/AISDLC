@@ -11,7 +11,7 @@ Agents read `CLAUDE.md` first when they touch a repo. Without it, they guess at 
 2. Draft CLAUDE.md with sections:
    - **Stack** — languages, frameworks, major libs
    - **Local Setup** — prerequisites, install, run, test commands
-   - **Conventions** — code style, testing patterns, branching
+   - **Conventions** — code style, testing patterns, default branch (PR target)
    - **Structure** — directory layout at a high level
    - **Gotchas** — non-obvious behavior, known issues
    - **Related repos** — cross-repo dependencies
@@ -20,7 +20,7 @@ Agents read `CLAUDE.md` first when they touch a repo. Without it, they guess at 
 
 ## Idempotent check
 ```bash
-test -f $MAIN_REPO/CLAUDE.md
+test -f "$MAIN_REPO/CLAUDE.md"
 ```
 
 ## Acceptance

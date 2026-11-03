@@ -1,5 +1,6 @@
 # voice-s2s setup tickets — OpenAI Realtime / streaming voice
 # Layered on top of _common/manifest.yml. Some S-tickets are REPLACED by V-tickets.
+# Variables and keys: see the header of _common/manifest.yml and ../README.md.
 
 overrides:
   # These _common tickets are replaced, not extended
@@ -12,7 +13,7 @@ tickets:
     template: V01-stack-voice-config.md
     priority: P1
     owner: Tech
-    idempotent_check: "test -f .claude/stack-voice.yml"
+    idempotent_check: 'test -f .claude/stack-voice.yml'
     depends_on: []
 
   - id: V2
@@ -20,7 +21,7 @@ tickets:
     template: V02-tech-architecture-voice.md
     priority: P1
     owner: AI
-    idempotent_check: "test -f $MAIN_REPO/docs/TECH-Architecture-Voice.md"
+    idempotent_check: 'test -f "$CONTEXT_DIR/docs/TECH-Architecture-Voice.md"'
     depends_on: [S11, V1]
 
   - id: V3
@@ -28,7 +29,7 @@ tickets:
     template: V03-event-contracts.md
     priority: P1
     owner: AI
-    idempotent_check: "test -f $CONTEXT_DIR/contracts/events.yaml"
+    idempotent_check: 'test -f "$CONTEXT_DIR/contracts/events.yaml"'
     depends_on: [S1, V2]
 
   - id: V4
@@ -36,7 +37,7 @@ tickets:
     template: V04-voice-test-infra.md
     priority: P1
     owner: AI
-    idempotent_check: "test -d $MAIN_REPO/tests/fixtures/audio && test -f $MAIN_REPO/tests/mocks/realtime.py"
+    idempotent_check: 'test -d "$MAIN_REPO/tests/fixtures/audio" && test -f "$MAIN_REPO/tests/mocks/realtime.py"'
     depends_on: [S14, V3]
 
   - id: V5
@@ -44,7 +45,7 @@ tickets:
     template: V05-latency-instrumentation.md
     priority: P1
     owner: AI
-    idempotent_check: "grep -qrE 'latency_hop|trace_span.*voice' $MAIN_REPO/ 2>/dev/null"
+    idempotent_check: 'grep -qrE "latency_hop|trace_span.*voice" "$MAIN_REPO" 2>/dev/null'
     depends_on: [V2]
 
   - id: V6
@@ -52,5 +53,5 @@ tickets:
     template: V06-session-state-tests.md
     priority: P1
     owner: AI
-    idempotent_check: "grep -qrE 'test_reconnect|test_session_resume' $MAIN_REPO/tests/ 2>/dev/null"
+    idempotent_check: 'grep -qrE "test_reconnect|test_session_resume" "$MAIN_REPO/tests" 2>/dev/null'
     depends_on: [V4]

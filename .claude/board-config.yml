@@ -1,7 +1,9 @@
 # Board Configuration — AISDLC framework meta-board
 # This file lives inside the framework clone and refers ONLY to the framework's
-# own board (where F-tickets live). Client projects have their own board-config.yml
-# in their project workspace root (e.g. ~/projects/erp/.claude/board-config.yml).
+# own board (where F-tickets live). It is USER-owned: use `--owner Rohit-code` and
+# GraphQL `user(login: "Rohit-code")`. Client projects have their own board-config.yml
+# in their project workspace (path in the stack file's `board_config`, e.g.
+# erp-context/board-config.yml for ERP). Command recipes: .claude/rules/gh-recipes.md.
 
 board:
   name: "AI SDLC Pipeline"
@@ -10,26 +12,26 @@ board:
   project_id: PVT_kwHOAy3qVs4BqCgb
   status_field_id: PVTSSF_lAHOAy3qVs4BqCgbzhobWqk
   status_options:
-    backlog: 24c75ca4
-    frd_draft: 8c837498
-    frd_tech_plan: 63a0b10f
-    tech_plan_approved: c2c8461e
-    ai_development: 9016f692
-    code_review: b35efeea
-    staging_ready: 9042d52e
-    staging_review: 61a830eb
-    rework: ec2363f8
-    ready_for_production: 4bdda5f6
-    done: 5a0a2d19
-    hotfix: 7762c251
+    backlog: d04eb1e9
+    frd_draft: f53aadce
+    frd_tech_plan: 0e82ac14
+    tech_plan_approved: 3c789898
+    ai_development: 1532c4fe
+    code_review: eecd13bc
+    staging_ready: 78c3c6be
+    staging_review: d160c394
+    rework: d74512aa
+    ready_for_production: 8db01cfe
+    done: 6e984c2c
+    hotfix: bb0d8213
   priority_field_id: PVTSSF_lAHOAy3qVs4BqCgbzhobW0Q
   priority_options:
     p0: fc894408   # 🔴 P0 - Critical
     p1: cd3b902f   # 🟠 P1 - High
     p2: 89be3ec2   # 🟡 P2 - Medium
     p3: e25ef926   # 🟢 P3 - Low
-  repo: Rohit-code/AISDLC            # framework tickets are draft issues on the board
+  repo: Rohit-code/AISDLC            # framework tickets are real issues in Rohit-code/AISDLC, added to the board
 
 # How agents use this:
 #   Reads/writes ONLY the framework board.
-#   For client project tickets, read the project's own .claude/board-config.yml.
+#   For client project tickets, read the project's own board-config.yml (stack file `board_config`).

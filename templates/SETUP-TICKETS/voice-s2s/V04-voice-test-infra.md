@@ -35,7 +35,7 @@ You can't unit-test a streaming pipeline with REST patterns. Tests need to simul
 
 ## Idempotent check
 ```bash
-test -d $MAIN_REPO/tests/fixtures/audio && test -f $MAIN_REPO/tests/mocks/realtime.py
+test -d "$MAIN_REPO/tests/fixtures/audio" && test -f "$MAIN_REPO/tests/mocks/realtime.py"
 ```
 
 ## Acceptance

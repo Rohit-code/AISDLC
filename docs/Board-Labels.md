@@ -58,9 +58,24 @@ Applied per `ticket-discipline.md` Rule 2 when work is blocked on something outs
 
 ---
 
+## Workflow labels
+
+Used by the kanban workflow (`.claude/rules/kanban-workflow.md`) and the agents.
+
+| Label | Meaning |
+|---|---|
+| `frd-review` | FRD written; Product / Tech are reviewing it in 📝 FRD Draft |
+| `frd-approved` | FRD reviewed and accepted; ready to move into 🤖 FRD Tech Plan |
+| `ai-blocked` | AI cannot continue: blocking question posted, or a `Depends on: #N` PR is not merged yet. Removed when unblocked |
+| `needs-discussion` | A disagreement or open question needs a live sync; the ticket waits for the outcome comment |
+| `hotfix` | Production emergency in the 🚨 Hotfix lane (ticket first, fix, FRD after) |
+| `security-review` | Touches auth, permissions, tenant context, money, KYC or data exposure; the PR lists it under "Security review" and gets a second read before merge |
+
+---
+
 ## Feature-flow labels
 
-Optional labels that mark where in the contract-driven flow (F40) a ticket is:
+Optional labels that mark where in the contract-driven flow (`.claude/rules/contract-driven-flow.md`) a ticket is:
 
 | Label | Meaning |
 |---|---|
@@ -69,7 +84,7 @@ Optional labels that mark where in the contract-driven flow (F40) a ticket is:
 | `feature:fe` | FE sub-issue for a parent feature |
 | `feature:contract` | Contract validation sub-issue (tagged to both BE and FE) |
 
-Added when F40 lands.
+The `[Contract]` sub-issue must be approved by BE and FE (closed) before the parent moves 🔧 Tech Plan Approved → 💻 AI Development.
 
 ---
 
@@ -87,7 +102,7 @@ Added when F40 lands.
 
 ## Framework-board-only labels
 
-These only exist on the AISDLC framework board:
+These only exist in the `Rohit-code/AISDLC` repo (framework board). `bin/aisdlc-observe.sh` applies them; if a label is missing it files the issue without it and warns. Create one with `gh label create gap:rule --repo Rohit-code/AISDLC`.
 
 | Label | Meaning |
 |---|---|

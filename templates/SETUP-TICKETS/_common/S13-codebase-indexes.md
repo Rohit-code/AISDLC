@@ -20,7 +20,7 @@ Codebase indexes help agents find relevant code fast without rescanning the whol
 
 ## Idempotent check
 ```bash
-ls $CONTEXT_DIR/indexes/Codebase-Index-*.md 2>/dev/null | head -1 | grep -q .
+ls "$CONTEXT_DIR"/indexes/Codebase-Index-*.md >/dev/null 2>&1
 ```
 
 ## Acceptance

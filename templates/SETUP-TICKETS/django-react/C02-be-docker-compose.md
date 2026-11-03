@@ -22,11 +22,11 @@ Replicate prod topology locally. One command (`docker compose up -d`) gets the w
        image: postgres:16
        env_file: .env
        volumes: ["pgdata:/var/lib/postgresql/data"]
-       ports: ["5432:5432"]
+       ports: ["55432:5432"]   # non-default host port; never publish 5432
 
      redis:
        image: redis:7
-       ports: ["6379:6379"]
+       ports: ["56379:6379"]   # non-default host port; never publish 6379
 
      celery:
        build: .
@@ -47,7 +47,7 @@ Replicate prod topology locally. One command (`docker compose up -d`) gets the w
 
 ## Idempotent check
 ```bash
-grep -qE 'postgres|redis' $BE_REPO/docker-compose.yml 2>/dev/null
+grep -qE "postgres|redis" "$BE_REPO/docker-compose.yml" 2>/dev/null
 ```
 
 ## Acceptance

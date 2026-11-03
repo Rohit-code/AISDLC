@@ -1,7 +1,7 @@
 # V2: Generate TECH-Architecture-Voice.md
 
 ## What
-Create `<main-repo>/docs/TECH-Architecture-Voice.md` covering the streaming pipeline, session state, reconnection, and failure handling.
+Create `<project>-context/docs/TECH-Architecture-Voice.md` covering the streaming pipeline, session state, reconnection, and failure handling.
 
 ## Why
 BE/FE architecture templates don't fit voice-s2s. The pipeline is the product. Without this doc, every feature FRD has to re-derive how audio flows through the system.
@@ -56,7 +56,7 @@ Agent generates from codebase scan + Product Wiki + V1 (stack-voice.yml):
 
 ## Idempotent check
 ```bash
-test -f $MAIN_REPO/docs/TECH-Architecture-Voice.md
+test -f "$CONTEXT_DIR/docs/TECH-Architecture-Voice.md"
 ```
 
 ## Acceptance

@@ -1,16 +1,18 @@
 # Project Context Template
 
-Copy this directory to `<project>-context/` when setting up a new project with AISDLC.
+Copy this directory to `<project>-context/` when setting up a new project with AISDLC (setup ticket S1).
 
 ## What This Is
 
-Agent-operational files. Not documentation — docs live in the code repos they describe.
+The per-project context repo: project docs plus agent-operational files (contracts, indexes) and the project's board config. Code repos keep only their own `README.md` and `CLAUDE.md`.
 
 ## Structure
 
 ```
 <project>-context/
 ├── CLAUDE.md          ← Project-specific instructions (fill in from template)
+├── board-config.yml   ← Project board IDs (setup ticket S3)
+├── docs/              ← Product Wiki + Tech Architecture docs — @project-wiki / @planner
 ├── contracts/         ← API contracts (OpenAPI 3.0) — published by @planner
 └── indexes/           ← Codebase indexes — populated by size audits
 ```
@@ -19,25 +21,19 @@ Agent-operational files. Not documentation — docs live in the code repos they 
 
 | Content | Where it lives | Why |
 |---------|---------------|-----|
-| Product Wiki | `<project>-be/docs/Product-Wiki.md` | Cross-cutting product doc, lives in main code repo |
-| Tech Architecture BE | `<project>-be/docs/` | Describes BE code, travels with BE code |
-| Tech Architecture FE | `<project>-fe/docs/` | Describes FE code, travels with main FE repo |
+| Product Wiki | `<project>-context/docs/Product-Wiki.md` | Cross-cutting product doc, one place for all repos |
+| Tech Architecture BE / FE | `<project>-context/docs/TECH-Architecture-<scope>.md` | Next to the contracts and indexes agents read with it |
 | API Contracts | `<project>-context/contracts/` | Agent-operational — @planner publishes, @tester/@builder/@fe-builder consume |
 | Codebase Indexes | `<project>-context/indexes/` | Agent-operational — populated by size audits per `.claude/rules/size-audit.md` |
-
-## Why docs live in code repos, not here
-
-- Docs travel with the code they describe — no extra repo to manage
-- When you hand off a repo, the docs go with it naturally
-- Engineers look in the repo first, not in a separate context repo
-- Indexes and contracts are agent plumbing — they don't belong in a docs folder
+| Board IDs | `<project>-context/board-config.yml` | Same shape as the framework's `.claude/board-config.yml` |
 
 ## Setup steps
 
+`/aisdlc-init` (`.claude/skills/aisdlc-init/SKILL.md`) files a setup ticket for each of these that is missing:
+
 1. Copy this directory to `<project>-context/`
 2. Rename `CLAUDE-TEMPLATE.md` → `CLAUDE.md` and fill in project details
-3. Update `.claude/board-config.yml` with your project's board IDs
-4. Add `docs/` directories to your code repos for product documentation
-5. Run `@project-wiki` to generate v1 Product Wiki in the main code repo
-6. First build ticket will run size audit → populates `indexes/`
-7. First planning ticket will publish contracts → populates `contracts/`
+3. Create `board-config.yml` with your project's board IDs
+4. Run `@project-wiki` to generate v1 Product Wiki in `docs/`
+5. First build ticket will run size audit → populates `indexes/`
+6. First planning ticket will publish contracts → populates `contracts/`

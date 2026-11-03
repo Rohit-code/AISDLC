@@ -34,7 +34,7 @@ For each FE repo:
 
 ## Idempotent check
 ```bash
-grep -qE 'vitest|jest' $FE_REPO/package.json
+grep -qE "vitest|jest" "$FE_REPO/package.json" 2>/dev/null
 ```
 
 ## Acceptance
