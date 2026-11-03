@@ -62,10 +62,10 @@ case "$GAP_TYPE" in
     exit 1 ;;
 esac
 
-PROJECT_ID="${AISDLC_PROJECT_ID:?set AISDLC_PROJECT_ID (project_id in .claude/board-config.yml)}"
-STATUS_FIELD_ID="${AISDLC_STATUS_FIELD_ID:?set AISDLC_STATUS_FIELD_ID (status_field_id in .claude/board-config.yml)}"
-BACKLOG_OPTION_ID="${AISDLC_BACKLOG_OPTION_ID:?set AISDLC_BACKLOG_OPTION_ID (status_options.backlog in .claude/board-config.yml)}"
-REPO="${AISDLC_REPO:?set AISDLC_REPO to <owner>/AISDLC}"
+PROJECT_ID="${AISDLC_PROJECT_ID:-PVT_kwHOAy3qVs4BqCgb}"
+STATUS_FIELD_ID="${AISDLC_STATUS_FIELD_ID:-PVTSSF_lAHOAy3qVs4BqCgbzhobWqk}"
+BACKLOG_OPTION_ID="${AISDLC_BACKLOG_OPTION_ID:-24c75ca4}"
+REPO="${AISDLC_REPO:-Rohit-code/AISDLC}"
 
 BODY="## Hit while working
 
@@ -97,7 +97,7 @@ if [[ -z "$URL" ]]; then
   echo "Warning: label '$LABEL' not applied (may not exist in repo yet)." >&2
 fi
 
-ITEM_ID=$(gh project item-add "${AISDLC_PROJECT_NUMBER:?set AISDLC_PROJECT_NUMBER}" --owner "${AISDLC_OWNER:?set AISDLC_OWNER}" --url "$URL" --format json | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
+ITEM_ID=$(gh project item-add "${AISDLC_PROJECT_NUMBER:-2}" --owner "${AISDLC_OWNER:-Rohit-code}" --url "$URL" --format json | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
 
 gh project item-edit \
   --project-id "$PROJECT_ID" \

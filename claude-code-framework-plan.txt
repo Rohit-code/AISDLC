@@ -1051,22 +1051,22 @@ WHY CONTRACT-FIRST:
 # ============================================================
 
 Board: AI SDLC Pipeline
-URL: https://github.com/orgs/<owner>/projects/<project-number>
-Project ID: <project-id>
-Status Field ID: <status-field-id>
+URL: https://github.com/users/Rohit-code/projects/2
+Project ID: PVT_kwHOAy3qVs4BqCgb
+Status Field ID: PVTSSF_lAHOAy3qVs4BqCgbzhobWqk
 
 COLUMN OPTION IDS:
-  📝 FRD Draft              <option-id>
-  🤖 FRD Tech Plan Review   <option-id>
-  🔧 Tech Plan Approved     <option-id>
-  💻 AI Development         <option-id>
-  👀 Code Review            <option-id>
-  🧪 Staging Ready          <option-id>
-  🎭 Staging Review         <option-id>
-  🔄 Rework                 <option-id>
-  🚀 Ready for Production   <option-id>
-  ✅ Done                   <option-id>
-  🚨 Hotfix                 <option-id>
+  📝 FRD Draft              8c837498
+  🤖 FRD Tech Plan Review   63a0b10f
+  🔧 Tech Plan Approved     c2c8461e
+  💻 AI Development         9016f692
+  👀 Code Review            b35efeea
+  🧪 Staging Ready          9042d52e
+  🎭 Staging Review         61a830eb
+  🔄 Rework                 ec2363f8
+  🚀 Ready for Production   4bdda5f6
+  ✅ Done                   5a0a2d19
+  🚨 Hotfix                 7762c251
 
 LABELS (apply to each repo):
   Workflow: frd-review, frd-approved, ai-blocked, needs-discussion

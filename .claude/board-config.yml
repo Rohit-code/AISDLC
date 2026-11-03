@@ -5,30 +5,30 @@
 
 board:
   name: "AI SDLC Pipeline"
-  url: "https://github.com/orgs/<owner>/projects/<project-number>"
-  project_number: <project-number>
-  project_id: <project-id>
-  status_field_id: <status-field-id>
+  url: "https://github.com/users/Rohit-code/projects/2"
+  project_number: 2
+  project_id: PVT_kwHOAy3qVs4BqCgb
+  status_field_id: PVTSSF_lAHOAy3qVs4BqCgbzhobWqk
   status_options:
-    backlog: <option-id>
-    frd_draft: <option-id>
-    frd_tech_plan: <option-id>
-    tech_plan_approved: <option-id>
-    ai_development: <option-id>
-    code_review: <option-id>
-    staging_ready: <option-id>
-    staging_review: <option-id>
-    rework: <option-id>
-    ready_for_production: <option-id>
-    done: <option-id>
-    hotfix: <option-id>
-  priority_field_id: <priority-field-id>
+    backlog: 24c75ca4
+    frd_draft: 8c837498
+    frd_tech_plan: 63a0b10f
+    tech_plan_approved: c2c8461e
+    ai_development: 9016f692
+    code_review: b35efeea
+    staging_ready: 9042d52e
+    staging_review: 61a830eb
+    rework: ec2363f8
+    ready_for_production: 4bdda5f6
+    done: 5a0a2d19
+    hotfix: 7762c251
+  priority_field_id: PVTSSF_lAHOAy3qVs4BqCgbzhobW0Q
   priority_options:
-    p0: <option-id>   # 🔴 P0 - Critical
-    p1: <option-id>   # 🟠 P1 - High
-    p2: <option-id>   # 🟡 P2 - Medium
-    p3: <option-id>   # 🟢 P3 - Low
-  repo: <owner>/AISDLC            # framework tickets are draft issues on the board
+    p0: fc894408   # 🔴 P0 - Critical
+    p1: cd3b902f   # 🟠 P1 - High
+    p2: 89be3ec2   # 🟡 P2 - Medium
+    p3: e25ef926   # 🟢 P3 - Low
+  repo: Rohit-code/AISDLC            # framework tickets are draft issues on the board
 
 # How agents use this:
 #   Reads/writes ONLY the framework board.

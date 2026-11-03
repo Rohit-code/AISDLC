@@ -1,32 +1,32 @@
 # Framework Board Reference
 
 **Board**: AI SDLC Pipeline
-**URL**: https://github.com/orgs/<owner>/projects/<project-number>
+**URL**: https://github.com/users/Rohit-code/projects/2
 **Purpose**: Tracks framework improvements, learnings, and meta-work on AISDLC itself. Framework dogfoods its own SDLC here.
 
 ## IDs for automation
 
 ```
-Project ID:       <project-id>
-Status Field ID:  <status-field-id>
+Project ID:       PVT_kwHOAy3qVs4BqCgb
+Status Field ID:  PVTSSF_lAHOAy3qVs4BqCgbzhobWqk
 ```
 
 ## Column (Status) option IDs
 
 | # | Column | Option ID |
 |---|--------|-----------|
-| 0 | 📥 Backlog | `<option-id>` |
-| 1 | 📝 FRD Draft | `<option-id>` |
-| 2 | 🤖 FRD Tech Plan Review | `<option-id>` |
-| 3 | 🔧 Tech Plan Approved | `<option-id>` |
-| 4 | 💻 AI Development | `<option-id>` |
-| 5 | 👀 Code Review | `<option-id>` |
-| 6 | 🧪 Staging Ready | `<option-id>` |
-| 7 | 🎭 Staging Review | `<option-id>` |
-| 8 | 🔄 Rework | `<option-id>` |
-| 9 | 🚀 Ready for Production | `<option-id>` |
-| 10 | ✅ Done | `<option-id>` |
-| 11 | 🚨 Hotfix | `<option-id>` |
+| 0 | 📥 Backlog | `24c75ca4` |
+| 1 | 📝 FRD Draft | `8c837498` |
+| 2 | 🤖 FRD Tech Plan Review | `63a0b10f` |
+| 3 | 🔧 Tech Plan Approved | `c2c8461e` |
+| 4 | 💻 AI Development | `9016f692` |
+| 5 | 👀 Code Review | `b35efeea` |
+| 6 | 🧪 Staging Ready | `9042d52e` |
+| 7 | 🎭 Staging Review | `61a830eb` |
+| 8 | 🔄 Rework | `ec2363f8` |
+| 9 | 🚀 Ready for Production | `4bdda5f6` |
+| 10 | ✅ Done | `5a0a2d19` |
+| 11 | 🚨 Hotfix | `7762c251` |
 
 Note: this board labels column 2 as "🤖 FRD Tech Plan Review" while project boards use "🤖 FRD Tech Plan". Same column semantically — the framework board is slightly older and uses the original naming. Treat them as equivalent.
 
@@ -37,7 +37,7 @@ Note: this board labels column 2 as "🤖 FRD Tech Plan Review" while project bo
 ```graphql
 mutation {
   addProjectV2DraftIssue(input: {
-    projectId: "<project-id>"
+    projectId: "PVT_kwHOAy3qVs4BqCgb"
     title: "F99: Short title"
     body: "Ticket body in markdown..."
   }) {
@@ -51,9 +51,9 @@ mutation {
 ```graphql
 mutation {
   updateProjectV2ItemFieldValue(input: {
-    projectId: "<project-id>"
+    projectId: "PVT_kwHOAy3qVs4BqCgb"
     itemId: "<item_id_from_add>"
-    fieldId: "<status-field-id>"
+    fieldId: "PVTSSF_lAHOAy3qVs4BqCgbzhobWqk"
     value: { singleSelectOptionId: "<option_id_from_table_above>" }
   }) {
     projectV2Item { id }
@@ -65,8 +65,8 @@ mutation {
 
 ```graphql
 {
-  organization(login: "<owner>") {
-    projectV2(number: <project-number>) {
+  user(login: "Rohit-code") {
+    projectV2(number: 2) {
       items(first: 100) {
         nodes {
           id
