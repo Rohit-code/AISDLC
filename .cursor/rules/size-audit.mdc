@@ -1,0 +1,37 @@
+---
+description: Keep PRs small and reviewable — size-audit discipline
+---
+
+# Size Audit
+
+**Canonical rule**: `../../.claude/rules/size-audit.md` — read it before opening or expanding a PR / MR.
+
+## Triggers — adopt this rule when
+
+- Starting work on a ticket (pre-work audit of target files).
+- Preparing to open a PR / MR.
+- A change is growing past a few files / a few hundred lines.
+- Considering bundling unrelated fixes into one branch.
+
+## Default posture
+
+- Prefer several small PRs over one large PR.
+- If a PR exceeds the size threshold, split it before requesting review.
+- Never mix refactors with feature changes in the same PR.
+
+## Tech-debt discovery
+
+If a target file is a **red-threshold monolith** (per the canonical rule's thresholds), the agent MUST:
+
+1. Pause before coding.
+2. File a tech-debt ticket for the monolith on the active project board (one ticket per distinct monolith, never bundled).
+3. Propose a narrowed scope that works around the monolith.
+4. Continue project work on the narrowed scope.
+
+## Scope-discrepancy escalation
+
+Mid-build, if actual scope trends past **2× the complexity budget**, stop and escalate:
+
+- Post a "Scope discrepancy" comment on the ticket with 2–3 options (narrow / split / absorb).
+- Wait for Product or triage to choose.
+- Never silently absorb scope.

@@ -1,0 +1,66 @@
+---
+description: Ticket discipline — board-first, blocker tracking, dual-channel status, chat-to-ticket intake
+alwaysApply: true
+---
+
+# Ticket Discipline
+
+**Canonical rule**: `../../.claude/rules/ticket-discipline.md` — read it for full triggers, examples, and exception cases.
+
+## Four hard rules (always apply)
+
+### 1. Board-first for all features
+No code before the ticket exists. If a human describes work in chat without a ticket, AI files one (see Rule 4) before starting.
+
+### 2. Blocker tracking
+When blocked on something outside the dev team (client input, credentials, 3rd-party, design, data, spec), post on the ticket within the hour:
+
+```
+**Blocked**: <type> — <summary>.
+Waiting on: <@product-lead or @owner>.
+Started: <YYYY-MM-DD>.
+```
+
+Apply a `blocker:<type>` label. Pause the TAT timer.
+
+When unblocked:
+
+```
+**Unblocked** <date>. Duration: <N> days. Resuming.
+```
+
+Remove the label. Resume work.
+
+### 3. Dual-channel status (ticket + chat)
+Every stage transition, decision, or blocker is posted in BOTH places:
+
+- Ticket comment (persistent).
+- Chat reply summary: `#<ticket>: <action>. <link>.`
+
+If you only do one, the framework is failing.
+
+### 4. Chat-to-ticket intake
+When a dev describes a feature or bug in chat with enough context, AI drafts the ticket (using `../../templates/FRD-TEMPLATE.md`) and files it. Reply with:
+
+```
+Filed as #<N> on <board>. <link>.
+```
+
+If the description is ambiguous on one point, ask one clarifying question before filing. If ambiguous on many, file with `incomplete-spec` note and let triage promote.
+
+## Label taxonomy
+
+| Label | Use when |
+|---|---|
+| `blocker:client-input` | Waiting on client answer / decision / approval |
+| `blocker:credentials` | Waiting on secret / API key / access |
+| `blocker:3rd-party` | Waiting on external vendor |
+| `blocker:design` | Waiting on design spec or asset |
+| `blocker:data` | Waiting on seed / migration / sample data |
+| `blocker:spec` | Spec ambiguous, needs product clarification |
+
+Full taxonomy lives in `../../docs/Board-Labels.md`.
+
+## Enforcement
+
+Violation of any rule triggers a framework-gap ticket on AISDLC Backlog per `../../.claude/rules/framework-observation.md` (F38 — pending implementation).

@@ -1,0 +1,1079 @@
+# ============================================================
+# CLAUDE CODE AGENTIC FRAMEWORK — COMPLETE BUILD PLAN (v2)
+# ============================================================
+#
+# Ownership-Chain SDLC with GitHub Projects Integration
+# Every decision, assumption, and handoff logged on GitHub
+#
+# Copy this file to your actual project repo and say:
+# "Read claude-code-framework-plan.txt and start building Phase 1"
+#
+# Generated: YYYY-MM-DD
+# ============================================================
+
+
+# ============================================================
+# CONTEXT
+# ============================================================
+
+We're building a reusable, stack-agnostic framework for AI-driven
+software development with a CLEAR OWNERSHIP CHAIN.
+
+CORE PHILOSOPHY:
+- Ownership chain: Every stage has ONE owner (Product, Tech, or AI)
+- Ticket movement = permission: AI only works when humans move tickets
+  into AI columns
+- GitHub is the system of record: ALL decisions logged on tickets.
+  Connects to meeting notes, Slack, meeting-notes tools later
+- Ask, don't assume: Every agent asks questions on GitHub when unclear
+- Stack-agnostic: Same process, different stack.yml per project
+
+REPO STRATEGY:
+  2 repos per project (api, web) — no separate docs repo
+  Use GitHub built-in features: Issues, Wiki, Releases, Discussions
+  PRD = GitHub Issue (issue description IS the PRD)
+  FRD = Separate GitHub Issue (linked to PRD, moves on Kanban)
+  Execution Plan = Sub-tasks under FRD issue
+  Decisions/Progress = Comments on relevant tickets
+
+
+# ============================================================
+# THE KANBAN BOARD (11 Columns)
+# ============================================================
+
+PRD lives in GitHub Wiki (living document, not a task).
+FRD enters the Kanban board — this is where execution begins.
+
+COLUMN                    OWNER      ENTERS BY         EXITS BY           AI ACTIVE?
+──────────────────────    ─────      ──────────        ──────────         ──────────
+1. FRD Draft              Product    Product creates    Product moves      ASSIST ONLY
+2. FRD Tech Plan Review   AI         Product moves      AI moves           YES (generates exec plan)
+3. Tech Plan Approved     Tech       AI moves           Tech moves         NO (waiting)
+4. AI Development         AI         Tech moves         AI moves           YES (builds code)
+5. Code Review            Tech       AI moves           Tech moves         NO (waiting)
+6. Staging Ready          AI         Tech moves         AI moves           YES (deploys staging)
+7. Staging Review         Product    AI moves           Product moves      NO (waiting)
+8. Rework                 AI         Product moves      AI moves           YES (applies changes)
+9. Ready for Production   Tech       Product moves      Tech moves         NO (tech deploys)
+10. Done                  —          Tech moves         —                  NO
+
+SPECIAL:
+🚨 Hotfix               Tech/AI    Tech creates        Tech moves         YES (bypasses to AI Dev)
+
+PRD LIFECYCLE (separate from Kanban):
+  1. AI drafts PRD → pushes to GitHub Wiki
+  2. Product reviews/edits directly on Wiki (version history = audit trail)
+  3. Product creates FRD issue → links to Wiki PRD URL → FRD enters Kanban
+  4. As features ship, AI updates PRD wiki page with actuals
+
+
+# ============================================================
+# THE RULE: TICKET MOVEMENT = PERMISSION
+# ============================================================
+
+AI CANNOT move a ticket INTO an AI-active column.
+Only HUMANS can give AI permission to work by moving tickets into AI columns.
+
+AI CAN move a ticket OUT of an AI-active column into a human-review column.
+This is the handoff — "I'm done, your turn."
+
+INVALID AI MOVES (AI must NEVER do):
+  ✗ Anything → FRD Draft (only Product)
+  ✗ Anything → Tech Plan Approved (only Tech)
+  ✗ Anything → AI Development (only Tech)
+  ✗ Anything → Staging Review → Ready for Production (only Product)
+  ✗ Anything → Done (only Tech)
+
+VALID AI MOVES:
+  ✓ FRD Tech Plan Review → Tech Plan Approved (exec plan done)
+  ✓ AI Development → Code Review (code done, PR ready)
+  ✓ Staging Ready → Staging Review (staging deployed)
+  ✓ Rework → Staging Review (rework applied)
+  ✓ Rework → Code Review
+
+
+# ============================================================
+# STAGE-BY-STAGE DETAIL
+# ============================================================
+
+## STAGE 1: PRD DRAFT
+Owner: AI (generates) or Product (writes directly)
+Column: 📋 PRD Draft
+
+Two entry points:
+- Path A: Product creates issue with brief description → AI generates full PRD
+- Path B: AI identifies need from codebase → AI creates issue + PRD
+- Path C: Product creates issue with complete PRD already written
+
+AI (@prd-writer) behavior:
+1. Reads issue description + Figma (if linked)
+2. Reads existing codebase for context
+3. Generates PRD using PRD-TEMPLATE.md
+4. Posts PRD as comment on the issue
+5. Lists open questions
+6. DOES NOT move the ticket — waits for Product
+
+What gets logged on the ticket:
+- The full PRD
+- Open questions
+- Figma screen descriptions
+- Existing feature references
+
+
+## STAGE 2: PRD APPROVED
+Owner: Product
+Column: ✅ PRD Approved
+
+Product reviews PRD, comments with changes.
+AI updates PRD based on comments.
+When Product is satisfied → Product moves to "FRD Draft"
+
+What gets logged:
+- Product feedback comments
+- AI's PRD revisions
+- Final "PRD Approved" confirmation from Product
+
+
+## STAGE 3: FRD DRAFT
+Owner: Product (AI assists ONLY when asked)
+Column: 📝 FRD Draft
+
+Product writes the FRD — they decide WHAT gets built and the scope.
+Three modes:
+- Product writes FRD fully themselves
+- Product gives pointers → AI structures into FRD format
+- Mix: Product writes some sections, asks AI to fill gaps
+
+AI (@frd-assistant) is PASSIVE — only responds when Product asks.
+AI does NOT auto-generate the FRD.
+
+When Product is done → Product moves to "FRD Tech Plan Review"
+
+What gets logged:
+- The FRD (by Product)
+- Any AI assistance requests and responses
+- Product's scope decisions
+
+
+## STAGE 4: FRD TECH PLAN REVIEW
+Owner: AI
+Column: 🤖 FRD Tech Plan Review
+
+AI picks up the ticket. This is where AI THINKS.
+
+AI (@execution-planner) reads:
+- The approved PRD
+- The FRD from Product
+- The codebase (all repos)
+- stack.yml for tech stack
+- Figma designs
+
+AI generates the EXECUTION PLAN:
+- Exact files to create/modify (with paths)
+- Database model changes + migration strategy
+- API contract (endpoints, request/response shapes)
+- Celery task definitions
+- Frontend component breakdown (from Figma)
+- State management decisions
+- Test plan with specific test cases
+- Risk assessment
+- Cross-repo coordination plan
+- Deployment considerations
+- Estimated sub-issues breakdown
+- Feature flag definitions
+
+AI posts execution plan on the ticket.
+AI assigns ticket to tech lead / relevant engineer.
+AI moves ticket to "Tech Plan Approved" column.
+
+What gets logged:
+- The complete execution plan
+- Any questions AI has for tech team
+- Risk flags
+
+
+## STAGE 5: TECH PLAN APPROVED
+Owner: Tech Team
+Column: 🔧 Tech Plan Approved
+
+Tech reviews execution plan and adds:
+- DO's: "Use existing PaymentService", "Follow pattern in apps/billing/"
+- DON'T's: "Don't modify auth middleware", "Don't add new Django apps"
+- Constraints: "Max 2 new tables", "Must be backward compatible"
+- Flags: "This migration will lock users table for ~5min"
+- Architecture: "Use signals not direct calls"
+
+When satisfied → Tech moves to "AI Development"
+THIS IS EXPLICIT PERMISSION FOR AI TO WRITE CODE.
+
+What gets logged:
+- Tech team's DO's and DON'T's
+- Architecture guidance
+- Risk acknowledgments
+- Reviewer name (they review code in Stage 7)
+
+
+## STAGE 6: AI DEVELOPMENT
+Owner: AI
+Column: 💻 AI Development
+
+AI reads everything accumulated:
+- PRD (what, from Product)
+- FRD (how, from Product)
+- Execution Plan (how, from AI)
+- Tech DO's/DON'T's (constraints, from Tech)
+
+AI builds using specialized sub-agents:
+- @model-builder → Django models + migrations
+- @api-builder → DRF endpoints
+- @task-builder → Celery tasks
+- @design-interpreter → Figma → component mapping
+- @component-builder → React/RN components
+- @screen-builder → Pages/screens
+- @state-architect → State management
+- @api-client-gen → TypeScript API client
+- @test-writer / @test-writer-fe → Tests
+
+AI creates PR(s) linking to the ticket.
+AI assigns to SAME person who did tech review (Stage 5).
+AI moves ticket to "Code Review".
+
+IF AI hits ambiguity during development:
+- Comments on ticket with specific question
+- DOES NOT move the ticket back
+- Continues what it can, waits for answer on blocking items
+- Tech answers async on the thread
+
+What gets logged:
+- "Starting development" comment
+- Progress milestones
+- Questions during development
+- PR links with summary
+- Test results + coverage
+
+
+## STAGE 7: CODE REVIEW
+Owner: Tech Team
+Column: 👀 Code Review
+
+The developer from Stage 5 reviews:
+- Pulls code locally
+- Runs it
+- Reviews PR(s)
+- Tests edge cases
+- Pushes fixes to PR branch
+
+When ready → Tech moves to "Staging Ready"
+
+What gets logged:
+- Code review comments (GitHub PR review)
+- Fixes pushed by tech
+- "Approved" or "Changes Requested" on PR
+
+
+## STAGE 8: STAGING DEPLOY
+Owner: AI
+Column: 🧪 Staging Ready
+
+AI (@staging-deployer) handles:
+1. Documents exact staging deployment steps
+2. Runs/assists staging deployment
+3. Runs smoke tests + E2E tests on staging
+4. Generates PRODUCTION DEPLOYMENT CHECKLIST:
+   - Migration commands
+   - Environment variables
+   - Feature flags to enable
+   - CDN/cache steps
+   - Health verification
+   - ROLLBACK PLAN (exact steps to undo)
+5. Updates API docs + changelog
+6. Posts checklist on ticket
+7. Assigns to Product team member
+8. Moves ticket to "Staging Review"
+
+What gets logged:
+- Staging deployment steps (executed)
+- Smoke test + E2E results
+- Production deployment checklist
+- Rollback plan
+- API doc updates
+- Changelog entry
+
+
+## STAGE 9: STAGING REVIEW
+Owner: Product
+Column: 🎭 Staging Review
+
+Product tests feature on staging against acceptance criteria.
+
+If GOOD → Product moves to "Ready for Production", assigns to Tech
+If CHANGES NEEDED → Product comments with feedback, moves to "Rework"
+
+What gets logged:
+- Product's testing notes
+- Acceptance criteria check (pass/fail)
+- Change requests (with specifics)
+- Screenshots/recordings of issues
+
+
+## STAGE 10: REWORK
+Owner: AI
+Column: 🔄 Rework
+
+AI (@rework-planner) picks up:
+1. Reads Product's change feedback
+2. Assesses scope: tweak or significant change?
+3. If significant → updates execution plan, may need Tech review
+4. If tweak → makes changes directly
+5. Updates PR(s)
+6. Moves ticket back to "Code Review" (Stage 7)
+
+Loop: Rework → Code Review → Staging → Product Review
+Until Product approves.
+
+What gets logged:
+- AI's rework assessment
+- Changes made
+- Updated PR
+
+
+## STAGE 11: READY FOR PRODUCTION
+Owner: Tech (with AI assistance)
+Column: 🚀 Ready for Production
+
+Tech deploys using AI's checklist from Stage 8.
+AI assists with commands, monitoring, rollback.
+Tech does the actual deploy — AI does NOT have prod access.
+
+When deployed → Tech moves to "Done"
+
+What gets logged:
+- Deployment timestamp
+- Commands executed
+- Post-deploy verification
+- Issues + resolution
+
+
+## SPECIAL: HOTFIX FLOW
+Bypasses Stages 1-5 for production emergencies.
+
+Flow: Tech creates issue (label: hotfix) → AI Development →
+      Code Review → Production → THEN retroactive PRD/FRD docs
+
+Rules:
+- Only for production bugs / security issues
+- Tech creates + owns the issue
+- AI builds fix immediately
+- Minimal review, fast deploy
+- AI creates retroactive documentation AFTER fix is live
+
+
+# ============================================================
+# DOCUMENT CHAIN
+# ============================================================
+
+DOCUMENT              CREATED AT    CREATED BY    LIVES IN
+──────────────────    ──────────    ──────────    ────────
+PRD                   Pre-board     AI/Product    GitHub Wiki (living document)
+FRD                   Stage 1       Product       GitHub Issue (links to Wiki PRD)
+Execution Plan        Stage 2       AI            Sub-tasks under FRD issue
+Tech DO's/DON'T's    Stage 3       Tech          Comments on FRD issue
+PR Description        Stage 4       AI            GitHub PR (linked to FRD)
+Production Checklist  Stage 6       AI            Comment on FRD issue
+Rework Plan           Stage 8       AI            Comment on FRD issue
+Decision Log          All stages    Everyone      Comments on relevant issues
+
+PRD (Wiki) : FRD (Issue) = 1 : many
+FRD : Exec Plan = 1 : many (one per repo/scope)
+FRD : PR = 1 : many (one per repo)
+
+PRD = reference doc (Wiki). FRD = actionable work (Kanban).
+Every execution document lives ON THE TICKET. The issue thread IS the audit trail.
+
+
+# ============================================================
+# DECISION LOGGING FORMAT
+# ============================================================
+
+Every decision gets logged as a structured comment on the ticket:
+
+### 📌 Decision: [Title]
+**Stage**: [1-10] | **Decided by**: [Product/Tech/AI] | **Date**: YYYY-MM-DD
+**Context**: [why this decision was needed]
+**Decision**: [what was decided]
+**Alternatives**: [what else was considered]
+**Impact**: [what this affects]
+**References**: [Figma, meeting notes, Slack, meeting-notes tools links]
+
+AI logs decisions automatically. Humans log decisions in comments.
+External context (meeting-notes tools, Slack) linked via References field.
+
+
+# ============================================================
+# GITHUB LABELS
+# ============================================================
+
+WORKFLOW LABELS:
+  prd-review           PRD needs team review
+  prd-approved         PRD approved, ready for FRD
+  ai-blocked           AI needs clarification (waiting for human)
+  needs-discussion     Product and Tech disagree, need sync
+
+REPO LABELS:
+  ai-be                Backend sub-issue
+  ai-fe                Frontend web sub-issue
+  ai-fe-mobile         Frontend mobile sub-issue
+
+SPECIAL:
+  hotfix               Emergency fix, bypasses normal flow
+  security-review      Needs security review before development
+
+PRIORITY:
+  p0-critical          Production down
+  p1-high              Major feature / important bug
+  p2-medium            Standard feature
+  p3-low               Nice to have
+
+
+# ============================================================
+# AGENTS (Complete List)
+# ============================================================
+
+## template-docs/ agents (The Brain — 9 agents)
+
+@prd-writer          Stage 1    Generates PRDs from brief descriptions
+@frd-assistant       Stage 3    PASSIVE — helps Product structure FRD only when asked
+@execution-planner   Stage 4    Generates tech execution plan from FRD + codebase
+@rework-planner      Stage 10   Plans changes from Product feedback
+@ticket-manager      All        Enforces column transitions, assigns people,
+                                validates required docs exist before transitions
+@decision-logger     All        Structures and logs decisions on tickets
+@staging-deployer    Stage 8    Deploys staging, runs E2E, generates prod checklist
+@deploy-architect    Setup      Designs AWS infra (per-project, not per-ticket)
+@doc-writer          All        ADRs, changelogs, API docs, user-facing docs
+
+## template-api/ agents (Backend Builders — 7 agents)
+
+@model-builder       Stage 6    Django models + migrations + admin
+@api-builder         Stage 6    DRF serializers + views + URLs
+@task-builder        Stage 6    Celery + SQS tasks (idempotent, retry)
+@permission-builder  Stage 6    Auth + permissions + roles
+@migration-reviewer  Stage 6    Migration safety checks (READ-ONLY)
+@schema-publisher    Stage 6    OpenAPI schema updates → triggers FE client gen
+@test-writer         Stage 6    pytest test generation
+
+## template-web/ agents (Frontend Builders — 6 agents)
+
+@design-interpreter  Stage 6    Figma MCP → component mapping
+@component-builder   Stage 6    Shared UI (Tailwind/NativeWind, both platforms)
+@screen-builder      Stage 6    Next.js pages + RN screens + navigation
+@state-architect     Stage 6    React Query + Zustand + RHF decisions
+@api-client-gen      Stage 6    TypeScript client from OpenAPI schema
+@test-writer-fe      Stage 6    RTL + Jest + MSW tests
+
+TOTAL: 22 agents
+
+
+# ============================================================
+# TEMPLATES (6 documents)
+# ============================================================
+
+## PRD-TEMPLATE.md (AI generates, Product reviews)
+
+# PRD: [Feature Name]
+**Issue**: #NNN | **Status**: Draft / In Review / Approved
+**Generated by**: AI / Product | **Last Updated**: YYYY-MM-DD
+
+## Problem Statement
+## User Stories
+## Requirements
+  ### Must Have (v1)
+  ### Nice to Have (v2)
+## Business Rules
+## Design (Figma link + screen descriptions)
+## Edge Cases
+## Acceptance Criteria (checkboxes)
+## Scope Assessment (BE / FE Web / FE Mobile / Infra)
+## Dependencies
+## Open Questions (checkboxes)
+
+
+## FRD-TEMPLATE.md (Product writes, AI assists)
+
+# FRD: [Feature Name]
+**PRD**: #NNN | **Status**: Draft / Approved / In Progress / Complete
+**Written by**: Product | **AI Assisted**: Yes/No
+
+## Scope
+  - [ ] Backend | - [ ] FE Web | - [ ] FE Mobile | - [ ] Infra
+## Functional Requirements
+## API Requirements
+## Data Requirements
+## UI/UX Requirements (Figma links, flow descriptions)
+## Async / Background Processing
+## Non-Functional Requirements (performance, security, scale)
+## Acceptance Criteria (how Product will test on staging)
+## Open Questions
+
+
+## EXECUTION-PLAN-TEMPLATE.md (AI generates, Tech reviews)
+
+# Execution Plan: [Feature Name]
+**FRD**: #NNN | **Generated by**: AI
+**Status**: Draft / Tech Approved / In Progress / Complete
+
+## Summary
+## Files to Create (path, purpose, complexity)
+## Files to Modify (path, changes, risk)
+## Database Changes
+  ### New Models (fields, relationships)
+  ### Modified Models (change, migration risk)
+  ### Migration Strategy (reversible, backfill, lock time, rollback)
+## API Contract
+  ### New Endpoints (method, path, request, response, auth)
+  ### Modified Endpoints (method, path, change)
+## Async Tasks (task, trigger, queue, retry, timeout, idempotent)
+## Frontend: Component Breakdown
+  ### Shared (packages/ui/ — component, new/modify, Figma frame)
+  ### Web (packages/web/ — page/component, route)
+  ### Mobile (packages/mobile/ — screen/component, navigation)
+## State Management (state, type, store, cache)
+## Feature Flags (flag name, default, description)
+## Test Plan
+  ### Backend (test file, what to test, cases)
+  ### Frontend (test file, what to test, cases)
+## Cross-Repo Coordination (order, dependencies)
+## Risk Assessment (risk, likelihood, impact, mitigation)
+## Sub-Issues (issue, repo, scope, depends on)
+## Deployment Considerations (env vars, flags, migration, cache)
+## Tech Team: DO's and DON'T's (filled by Tech in Stage 5)
+
+
+## ADR-TEMPLATE.md
+
+# ADR-NNN: [Decision Title]
+**Status**: Proposed / Accepted / Deprecated
+**Date**: YYYY-MM-DD | **Decided by**: [who] | **Related**: #NNN
+
+## Context
+## Decision
+## Alternatives Considered
+## Consequences (positive, negative, risks)
+
+
+## DECISION-LOG-TEMPLATE.md
+
+### 📌 Decision: [Title]
+**Stage**: [1-10] | **Decided by**: [Product/Tech/AI] | **Date**: YYYY-MM-DD
+**Context**: [why needed]
+**Decision**: [what was decided]
+**Alternatives**: [what else was considered]
+**Impact**: [what this affects]
+**References**: [Figma, meeting notes, Slack, meeting-notes tools links]
+
+
+## PRODUCTION-CHECKLIST-TEMPLATE.md
+
+# Production Deployment: [Feature Name]
+**Ticket**: #NNN | **Generated by**: AI at Stage 8
+
+## Pre-Deploy
+  - [ ] All PRs merged (list PR numbers)
+  - [ ] Staging verified by Product
+  - [ ] Feature flags configured (disabled by default)
+
+## Deploy Steps (in order)
+  1. [exact command]
+  2. [exact command]
+  ...
+
+## Post-Deploy Verification
+  - [ ] Health check: [command]
+  - [ ] Smoke test: [steps]
+  - [ ] Enable feature flag: [flag name]
+  - [ ] Verify: [what to check]
+
+## Rollback Plan
+  1. Disable feature flag: [command]
+  2. Revert migration: [command]
+  3. Revert deploy: [command]
+  4. Verify rollback: [check]
+
+## Notes
+  [Anything unusual about this deploy]
+
+
+# ============================================================
+# DIRECTORY STRUCTURE
+# ============================================================
+
+claude-code-framework/
+├── README.md                                     ← Onboarding guide
+│
+├── template-docs/                                ← THE BRAIN REPO
+│   ├── CLAUDE.md
+│   ├── .claude/
+│   │   ├── stack.yml
+│   │   ├── settings.json
+│   │   ├── agents/
+│   │   │   ├── prd-writer/agent.md               ← Stage 1
+│   │   │   ├── frd-assistant/agent.md             ← Stage 3
+│   │   │   ├── execution-planner/agent.md         ← Stage 4
+│   │   │   ├── rework-planner/agent.md            ← Stage 10
+│   │   │   ├── ticket-manager/agent.md            ← All stages
+│   │   │   ├── decision-logger/agent.md           ← All stages
+│   │   │   ├── staging-deployer/agent.md          ← Stage 8
+│   │   │   ├── deploy-architect/agent.md          ← Project setup
+│   │   │   └── doc-writer/agent.md                ← All stages
+│   │   ├── rules/
+│   │   │   ├── agent-communication.md
+│   │   │   └── kanban-workflow.md
+│   │   └── hooks/
+│   ├── templates/
+│   │   ├── PRD-TEMPLATE.md
+│   │   ├── FRD-TEMPLATE.md
+│   │   ├── EXECUTION-PLAN-TEMPLATE.md
+│   │   ├── ADR-TEMPLATE.md
+│   │   ├── DECISION-LOG-TEMPLATE.md
+│   │   └── PRODUCTION-CHECKLIST-TEMPLATE.md
+│   └── .mcp.json
+│
+├── template-api/                                 ← BACKEND REPO
+│   ├── CLAUDE.md
+│   ├── .claude/
+│   │   ├── stack.yml
+│   │   ├── settings.json
+│   │   ├── agents/
+│   │   │   ├── model-builder/agent.md
+│   │   │   ├── api-builder/agent.md
+│   │   │   ├── task-builder/agent.md
+│   │   │   ├── permission-builder/agent.md
+│   │   │   ├── migration-reviewer/agent.md
+│   │   │   ├── schema-publisher/agent.md
+│   │   │   └── test-writer/agent.md
+│   │   ├── rules/
+│   │   │   ├── agent-communication.md
+│   │   │   ├── kanban-workflow.md
+│   │   │   ├── models.md
+│   │   │   ├── api.md
+│   │   │   ├── tasks.md
+│   │   │   ├── migrations.md
+│   │   │   └── testing.md
+│   │   └── hooks/
+│   └── .mcp.json
+│
+└── template-web/                                 ← FRONTEND REPO
+    ├── CLAUDE.md
+    ├── .claude/
+    │   ├── stack.yml
+    │   ├── settings.json
+    │   ├── agents/
+    │   │   ├── design-interpreter/agent.md
+    │   │   ├── component-builder/agent.md
+    │   │   ├── screen-builder/agent.md
+    │   │   ├── state-architect/agent.md
+    │   │   ├── api-client-gen/agent.md
+    │   │   └── test-writer-fe/agent.md
+    │   ├── rules/
+    │   │   ├── agent-communication.md
+    │   │   ├── kanban-workflow.md
+    │   │   ├── components.md
+    │   │   ├── screens-web.md
+    │   │   ├── screens-mobile.md
+    │   │   ├── hooks.md
+    │   │   ├── api-client.md
+    │   │   └── testing.md
+    │   └── hooks/
+    └── .mcp.json
+
+
+# ============================================================
+# STACK CONFIG (stack.yml)
+# ============================================================
+
+project: yourapp
+repos:
+  api: github.com/org/yourapp-api
+  web: github.com/org/yourapp-web
+  docs: github.com/org/yourapp-docs
+
+# example values — set these per project
+backend:
+  framework: django           # django | fastapi | express | nestjs | spring-boot
+  orm: django-orm             # django-orm | sqlalchemy | prisma | typeorm
+  api_style: rest             # rest | graphql
+  auth: jwt                   # jwt | session | oauth
+  queue: celery-sqs           # celery-sqs | celery-redis | bullmq
+  db: postgresql              # postgresql | mysql | mongodb
+
+frontend:
+  framework: nextjs           # nextjs | nuxt | remix
+  language: typescript
+  css: tailwind               # tailwind | css-modules | styled-components
+  state: zustand              # zustand | redux-toolkit | pinia | jotai
+  data_fetching: react-query  # react-query | swr | rtk-query
+  forms: react-hook-form      # react-hook-form | formik
+
+mobile:
+  framework: react-native     # react-native | flutter | swift | kotlin
+  toolkit: expo               # expo | bare
+  css: nativewind             # nativewind | stylesheet
+  navigation: react-navigation
+
+deploy:
+  cloud: aws                  # aws | gcp | azure
+  compute: ecs-fargate        # ecs-fargate | lambda | eks
+  cdn: cloudfront
+
+feature_flags:
+  provider: custom            # launchdarkly | unleash | custom | none
+
+i18n: true
+offline_support: false
+
+
+# ============================================================
+# CONFLICT RESOLUTION PROTOCOL
+# ============================================================
+
+When Product and Tech disagree:
+
+1. Tech comments disagreement on ticket with reasoning
+2. Product responds with business justification
+3. If unresolved → label "needs-discussion", schedule sync
+4. Decision logged using DECISION-LOG-TEMPLATE.md
+5. Domain determines final say:
+   - Business logic / scope → Product wins
+   - Technical feasibility / architecture → Tech wins
+   - Cost / timeline → discussed, Tech advises, Product decides
+
+All disagreements and resolutions logged on the ticket.
+
+
+# ============================================================
+# PHASED BUILD ORDER
+# ============================================================
+
+PHASE 1: SKELETON + KANBAN + PRD (build first)
+  - Directory structure (all 3 templates)
+  - stack.yml, CLAUDE.md (×3), settings.json (×3), .mcp.json (×3)
+  - agent-communication.md + kanban-workflow.md rules (×3)
+  - PRD-TEMPLATE.md
+  - @prd-writer agent
+  - @ticket-manager agent
+  - README.md (onboarding)
+
+PHASE 2: FRD + EXECUTION PLANNING
+  - FRD-TEMPLATE.md
+  - EXECUTION-PLAN-TEMPLATE.md
+  - DECISION-LOG-TEMPLATE.md
+  - @frd-assistant agent
+  - @execution-planner agent
+  - @decision-logger agent
+
+PHASE 3: TEST GENERATION
+  - @test-writer (BE) agent
+  - @test-writer-fe (FE) agent
+  - testing.md rules (BE + FE)
+  - ADR-TEMPLATE.md
+
+PHASE 4: BE BUILD AGENTS
+  - @model-builder, @api-builder, @task-builder
+  - @permission-builder, @migration-reviewer, @schema-publisher
+  - BE rules: models.md, api.md, tasks.md, migrations.md
+
+PHASE 5: FE BUILD AGENTS
+  - @design-interpreter, @component-builder, @screen-builder
+  - @state-architect, @api-client-gen
+  - FE rules: components.md, screens-web.md, screens-mobile.md,
+    hooks.md, api-client.md
+
+PHASE 6: STAGING + DEPLOY
+  - @staging-deployer agent
+  - @rework-planner agent
+  - @deploy-architect agent
+  - @doc-writer agent
+  - PRODUCTION-CHECKLIST-TEMPLATE.md
+
+PHASE 7: AUTOMATION + MONITORING
+  - Scheduled trigger for ticket monitoring
+  - GitHub Projects API integration
+  - Stale ticket detection + ping agent
+  - Velocity metrics agent (future)
+
+
+# ============================================================
+# GAP ANALYSIS (14 Identified Gaps)
+# ============================================================
+
+## Gap 1: Emergency Hotfix Flow [CRITICAL — Phase 1]
+
+Problem: 11-stage pipeline can't handle 2am production bugs.
+Solution: "🚨 Hotfix" column bypasses Stages 1-5.
+  Tech creates issue (label: hotfix) → AI builds fix →
+  Code Review → Production → Retroactive docs AFTER fix is live.
+
+## Gap 2: Ticket Dependencies [CRITICAL — Phase 2]
+
+Problem: Feature B depends on Feature A's API being deployed.
+Solution: Execution Plan includes "Depends On" field.
+  @ticket-manager blocks development if deps aren't met.
+  AI comments: "Blocked: waiting for #201 to reach Staging"
+
+## Gap 3: Multi-PR Coordination [HIGH — Phase 4]
+
+Problem: 1 feature = BE PR + FE PR. Partial merge = broken deploy.
+Solution: @ticket-manager tracks all PRs per ticket.
+  Nothing moves to Staging until ALL PRs approved.
+  Feature flags allow code deploy without feature enable.
+
+## Gap 4: Conflict Resolution [HIGH — Phase 1]
+
+Problem: Product and Tech disagree on approach.
+Solution: Escalation protocol in kanban-workflow.md.
+  Business logic → Product wins.
+  Technical architecture → Tech wins.
+  All disagreements logged on ticket.
+
+## Gap 5: Stale Ticket Detection [MEDIUM — Phase 7]
+
+Problem: Tickets rot in columns with no one noticing.
+Solution: Daily scheduled agent checks ticket age.
+  >2 days in Code Review → ping reviewer.
+  >3 days anywhere → ping owner.
+  >5 days → escalate to team lead.
+
+## Gap 6: Security Review [HIGH — Phase 2]
+
+Problem: Auth/payment/PII features need security review.
+Solution: Label `security-review` auto-detected by AI
+  or manually added. Security review happens between
+  Stage 5 and 6. Non-sensitive tickets skip it.
+
+## Gap 7: QA / E2E Testing [MEDIUM — Phase 6]
+
+Problem: Who does systematic QA beyond AI tests + Product testing?
+Solution: @staging-deployer runs E2E suite on staging.
+  Reports results before Product reviews.
+  Product gets: "All automated tests pass. Manually verify: [list]"
+
+## Gap 8: Documentation Updates [MEDIUM — Phase 6]
+
+Problem: API docs, changelog, user docs never get updated.
+Solution: @doc-writer runs at Stage 8 alongside staging deploy.
+  Auto-generates API reference, changelog, user docs.
+  Product reviews in Stage 9.
+
+## Gap 9: Feature Flags [HIGH — Phase 4]
+
+Problem: Can't deploy without enabling. Can't A/B test. Can't quick-disable.
+Solution: Added to stack.yml (provider config).
+  @execution-planner includes flag definition.
+  Build agents wrap features in flags.
+  Production checklist includes flag enable step.
+  Rollback = disable flag (instant).
+
+## Gap 10: Rollback Plans [HIGH — Phase 6]
+
+Problem: What if staging/production deploy breaks?
+Solution: @staging-deployer generates BOTH deploy AND rollback.
+  Every migration tested for reversibility.
+  Feature flags = instant rollback.
+  Production checklist always has rollback section.
+
+## Gap 11: External Context (meeting-notes tools, Slack) [LOW — Phase 7+]
+
+Problem: Decisions happen in meetings/Slack, not on GitHub.
+Solution: Convention: post meeting summaries on tickets.
+  Decision log format includes References field.
+  Future: MCP connectors auto-post to tickets.
+
+## Gap 12: Knowledge Accumulation [MEDIUM — Phase 6]
+
+Problem: After 50 features, how to find past decisions?
+Solution: Decision logs on tickets (searchable).
+  @doc-writer creates ADRs for significant decisions.
+  AI reads past decisions before making execution plans.
+
+## Gap 13: Onboarding Guide [MEDIUM — Phase 1]
+
+Problem: New team member doesn't know the pipeline.
+Solution: README.md includes:
+  - How the 12 columns work
+  - What AI does vs what humans do
+  - How to interact with AI on tickets
+  - Common workflows
+
+## Gap 14: Velocity Metrics [LOW — Phase 7+]
+
+Problem: Is the pipeline working? Where are bottlenecks?
+Solution: Future scheduled agent calculates:
+  - Average time per column
+  - Rework rate (Stage 9 → 10)
+  - AI accuracy (how often code review has changes)
+  - Weekly summary posted to metrics issue
+
+
+# ============================================================
+# VERIFICATION PLAN
+# ============================================================
+
+1. KANBAN TEST
+   Set up GitHub Projects board with 12 columns.
+   Create test issue. Verify @ticket-manager enforces transitions.
+
+2. PRD TEST
+   Create issue: "We need team invitations."
+   Verify @prd-writer generates complete PRD with questions.
+
+3. FRD ASSIST TEST
+   Move to FRD Draft. Ask @frd-assistant to structure FRD.
+   Verify it's PASSIVE (doesn't auto-generate).
+
+4. EXECUTION PLAN TEST
+   Move to FRD Tech Plan Review.
+   Verify @execution-planner generates complete plan.
+
+5. DEVELOPMENT TEST
+   Add tech DO's/DON'T's. Move to AI Development.
+   Verify AI respects constraints, creates PR(s).
+
+6. STAGING TEST
+   Move through code review to staging.
+   Verify @staging-deployer generates production checklist.
+
+7. REWORK TEST
+   Add change feedback in staging review. Move to Rework.
+   Verify AI applies changes, loops back correctly.
+
+8. FULL PIPELINE
+   End-to-end: issue → PRD → FRD → plan → build → test →
+   staging → review → production → done.
+
+9. HOTFIX TEST
+   Create hotfix issue. Verify bypass flow works.
+
+
+# ============================================================
+# HOW TO USE ON A NEW PROJECT
+# ============================================================
+
+1. Copy template-api/ to your BE repo, template-web/ to your FE repo
+2. Edit stack.yml with your actual stack choices
+3. Edit CLAUDE.md with your actual repo URLs
+4. Edit .mcp.json with your GitHub token env var
+5. Connect Figma MCP at https://claude.ai/settings/connectors
+6. Create GitHub Project board with 13 columns (see GITHUB BOARD REFERENCE below)
+7. Create labels on each repo (run the label creation script)
+8. Create a GitHub Issue with a feature idea (even 2-3 lines — this IS the PRD)
+9. Run: @prd-writer <issue-number>
+10. The ownership chain begins.
+
+
+# ============================================================
+# THOUGHT PROCESS: WHY EACH STAGE EXISTS
+# ============================================================
+
+PRD (Wiki): AI generates first draft, Product edits directly.
+Living document — grows with every feature. Not a task, not on
+the board. Like a Confluence page. Version history = audit trail.
+
+STAGE 1 (FRD): Product owns because FRD = scope decisions.
+If AI writes FRD, AI decides scope. That's dangerous.
+Product knows business priority and "v1 simplicity" judgment.
+FRD links back to Wiki PRD for context.
+
+STAGE 2 (Execution Plan): The bridge nobody builds. Translates
+product language into engineering specifics. This is where 80%
+of project delays happen — the gap between what Product wants
+and what Tech builds. The execution plan closes it explicitly.
+
+STAGE 3 (Tech Approval): Guardrails. Tech knows things AI can't
+infer: "We tried microservices for this last year and it failed."
+Institutional knowledge captured here.
+
+STAGE 4 (AI Development): AI reads Wiki PRD + FRD + Exec Plan +
+Tech DO's/DON'T's. Richest context any developer has ever had.
+By the time AI writes code, ambiguity is near zero.
+
+STAGE 5 (Code Review): Same person from Stage 3. They have
+context. Random reviewer would re-read everything. Same person
+= faster, better review.
+
+STAGE 6 (Staging): Production checklist generated HERE, not at
+deploy time. Gets reviewed by Product (Stage 7) and Tech
+(Stage 9) before production. Catches checklist errors early.
+
+STAGE 7 (Staging Review): 70% of features need rework. This
+isn't failure — it's how products get built. The framework
+embraces it.
+
+STAGE 8 (Rework): AI assesses scope first. "Move button left"
+≠ "add offline support." Prevents scope creep through the loop.
+
+STAGE 9 (Production): Human deploys. AI provides instructions.
+Security, compliance, and "a human should be watching" are why.
+
+
+# ============================================================
+# IMPLEMENTATION LIFECYCLE (Inside Stage 6)
+# ============================================================
+
+Contract-first development — FE can start in parallel with BE.
+
+6.1  API CONTRACT FIRST (types, payloads, response shapes)
+     ├── OpenAPI schema updated
+     └── TypeScript types generated
+          │
+     ┌────┴────┐
+     │         │
+6.2  BE        6.3  FE (starts immediately, parallel)
+     Models         API client from schema
+     Real API       Components from Figma
+     Tasks          Screens + state
+     │              Uses mock/typed responses until BE ready
+     │         │
+     └────┬────┘
+          │
+6.4  Tests (both sides)
+6.5  Update GitHub + PR
+6.6  Deployment prep
+
+WHY CONTRACT-FIRST:
+- FE team doesn't wait for BE to finish
+- API shapes are agreed upfront — fewer integration surprises
+- TypeScript types generated from OpenAPI = compile-time safety
+- Mock responses use real types, so FE code works when BE ships
+
+
+# ============================================================
+# GITHUB BOARD REFERENCE
+# ============================================================
+
+Board: AI SDLC Pipeline
+URL: https://github.com/orgs/<owner>/projects/<project-number>
+Project ID: <project-id>
+Status Field ID: <status-field-id>
+
+COLUMN OPTION IDS:
+  📝 FRD Draft              <option-id>
+  🤖 FRD Tech Plan Review   <option-id>
+  🔧 Tech Plan Approved     <option-id>
+  💻 AI Development         <option-id>
+  👀 Code Review            <option-id>
+  🧪 Staging Ready          <option-id>
+  🎭 Staging Review         <option-id>
+  🔄 Rework                 <option-id>
+  🚀 Ready for Production   <option-id>
+  ✅ Done                   <option-id>
+  🚨 Hotfix                 <option-id>
+
+LABELS (apply to each repo):
+  Workflow: frd-review, frd-approved, ai-blocked, needs-discussion
+  Scope:    scope:be, scope:fe-web, scope:fe-mobile, scope:infra
+  Special:  hotfix, security-review
+  Priority: p0-critical, p1-high, p2-medium, p3-low
+
+LABEL CREATION COMMAND (run per repo):
+  gh label create "prd-review" --repo ORG/REPO --color "1d76db" --description "PRD needs review"
+  (see full list in setup script)

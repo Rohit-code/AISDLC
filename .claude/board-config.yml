@@ -1,0 +1,35 @@
+# Board Configuration — AISDLC framework meta-board
+# This file lives inside the framework clone and refers ONLY to the framework's
+# own board (where F-tickets live). Client projects have their own board-config.yml
+# in their project workspace root (e.g. ~/projects/erp/.claude/board-config.yml).
+
+board:
+  name: "AI SDLC Pipeline"
+  url: "https://github.com/orgs/<owner>/projects/<project-number>"
+  project_number: <project-number>
+  project_id: <project-id>
+  status_field_id: <status-field-id>
+  status_options:
+    backlog: <option-id>
+    frd_draft: <option-id>
+    frd_tech_plan: <option-id>
+    tech_plan_approved: <option-id>
+    ai_development: <option-id>
+    code_review: <option-id>
+    staging_ready: <option-id>
+    staging_review: <option-id>
+    rework: <option-id>
+    ready_for_production: <option-id>
+    done: <option-id>
+    hotfix: <option-id>
+  priority_field_id: <priority-field-id>
+  priority_options:
+    p0: <option-id>   # 🔴 P0 - Critical
+    p1: <option-id>   # 🟠 P1 - High
+    p2: <option-id>   # 🟡 P2 - Medium
+    p3: <option-id>   # 🟢 P3 - Low
+  repo: <owner>/AISDLC            # framework tickets are draft issues on the board
+
+# How agents use this:
+#   Reads/writes ONLY the framework board.
+#   For client project tickets, read the project's own .claude/board-config.yml.

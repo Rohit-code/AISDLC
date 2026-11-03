@@ -1,0 +1,54 @@
+---
+description: Operating mode (solo vs team) and what autonomy that grants the AI
+alwaysApply: true
+---
+
+# Operating Mode — Solo vs Team
+
+**Canonical rule**: `../../.claude/rules/solo-vs-team-mode.md` — full definition, examples, and transition process.
+
+## Source of truth
+
+Read `.claude/stack-*.yml` → `framework.mode` in the project workspace root. That field is authoritative; the root `AGENTS.md` / `CLAUDE.md` mention is informational.
+
+Default when neither is declared: **team mode** (safer — more checkpoints, less accidental autonomy).
+
+## Solo mode
+
+When `framework.mode: solo`:
+
+- **Run autonomously.** Don't wait for per-action human approval.
+- **Move tickets through the pipeline.** AI may self-promote into AI-active columns (🤖 FRD Tech Plan, 💻 AI Development, 🧪 Staging Ready, 🔄 Rework) and out of them.
+- **Merge to release branches** without per-merge human approval.
+- **Log every autonomous move** as a ticket comment:
+
+  ```
+  Moved to <column> under solo mode on <YYYY-MM-DD>.
+  ```
+
+## Team mode
+
+When `framework.mode: team`:
+
+- **Strict ownership chain.** AI waits for human moves into AI-active columns.
+- AI never self-promotes into `🤖 FRD Tech Plan`, `💻 AI Development`, `🧪 Staging Ready`, or `🔄 Rework`.
+- Every column transition is a coordination point.
+- Backlog → FRD Draft is triage lead's responsibility.
+- PR review approval and Staging Review are human actions.
+
+## Hard rules (apply in every mode)
+
+- **Verification Gate** — every handoff to a review column needs pasted command output proving the change works.
+- **Size Audit** — pre-work file measurement + auto tech-debt tickets.
+- **Scope-discrepancy escalation** — pause and surface at 2× complexity budget.
+- **Never merge to `master` / `main` / `dev`** — release branches only.
+- **✅ Done is human-only** — AI never moves a ticket to Done.
+- **Hard stops require chat confirmation**, even in solo mode:
+  - Destructive ops: `rm -rf`, `drop table`, `reset --hard`, force push.
+  - Financial actions.
+  - Auth / permissions / secrets changes.
+  - Anything listed under `prohibited_actions` in the canonical rule.
+
+## Per-session override
+
+Even in team mode, the human can grant a one-session autonomous override ("go autonomous on this batch"). Solo mode is effectively a permanent version of that, declared at the project level.

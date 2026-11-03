@@ -1,0 +1,31 @@
+---
+description: What the AI may and may not do when work touches client-facing surfaces (UI copy, APIs, emails)
+---
+
+# Client-Facing Boundary
+
+**Canonical rule**: `../../.claude/rules/client-facing-boundary.md` — read it in full before changing anything user-visible.
+
+## Triggers — adopt this rule when
+
+- Editing UI copy, labels, error messages, or email / SMS templates.
+- Changing public API contracts or response shapes.
+- Modifying anything in the client's user-facing code paths.
+- Authoring artifacts that will land in a client-owned repo (commits, PR descriptions, release notes).
+
+## Default posture
+
+- AI drafts changes but does **not** finalize client-facing copy without human sign-off.
+- Preserve existing brand voice, tone, and legal / compliance phrasing.
+- Flag any uncertainty back to product / triage rather than guessing.
+
+## Framework artifacts stay internal
+
+Per the canonical rule, **the client never sees**:
+
+- The AISDLC framework (`aisdlc/`), its rules, agents, or folder structure.
+- Agent names (`@builder`, `@planner`, etc.) in commits, PR descriptions, comments.
+- Framework terminology ("verification gate", "size audit", "SDLC columns") in client-visible artifacts.
+- The `<project>-context/` repo unless the engagement explicitly opts to share it.
+
+`@shipper` performs a **client-visibility sanitization pass** before pushing anything to a client-owned repo.

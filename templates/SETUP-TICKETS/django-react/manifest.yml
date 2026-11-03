@@ -1,0 +1,78 @@
+# django-react setup tickets — Django BE + React/Next FEs
+# Layered on top of _common/manifest.yml. Init runs _common first, then this.
+
+tickets:
+  - id: C1
+    title: "[setup] BE Dockerfile with multi-stage build"
+    template: C01-be-dockerfile.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: "test -f $BE_REPO/Dockerfile"
+    depends_on: [S4]
+
+  - id: C2
+    title: "[setup] BE docker-compose with postgres + redis + celery"
+    template: C02-be-docker-compose.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: "grep -qE 'postgres|redis' $BE_REPO/docker-compose.yml 2>/dev/null"
+    depends_on: [S6, C1]
+
+  - id: C3
+    title: "[setup] BE pytest-django + factory-boy setup"
+    template: C03-be-pytest-setup.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: "test -f $BE_REPO/tests/conftest.py && test -f $BE_REPO/tests/factories.py"
+    depends_on: [C2]
+
+  - id: C4
+    title: "[setup] BE settings_test.py with Postgres test DB"
+    template: C04-be-settings-test.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: "test -f $BE_REPO/*/settings_test.py 2>/dev/null"
+    depends_on: [C3]
+
+  - id: C5
+    title: "[setup] FE local dev setup (per FE repo)"
+    template: C05-fe-local-dev.md
+    priority: P1
+    owner: AI
+    applies_to: frontend
+    idempotent_check: "test -f $FE_REPO/.env.example && test -f $FE_REPO/CLAUDE.md"
+    depends_on: [S4]
+    runs_per: frontend_repo   # runs once per FE repo
+
+  - id: C6
+    title: "[setup] FE Tailwind config + design tokens alignment"
+    template: C06-fe-design-tokens.md
+    priority: P2
+    owner: AI
+    applies_to: frontend
+    idempotent_check: "grep -q '@theme\\|theme.extend' $FE_REPO/tailwind.config.* $FE_REPO/src/index.css 2>/dev/null"
+    depends_on: [C5]
+    runs_per: frontend_repo
+
+  - id: C7
+    title: "[setup] FE vitest or jest setup (per FE repo)"
+    template: C07-fe-test-setup.md
+    priority: P2
+    owner: AI
+    applies_to: frontend
+    idempotent_check: "grep -qE 'vitest|jest' $FE_REPO/package.json"
+    depends_on: [C5]
+    runs_per: frontend_repo
+
+  - id: C8
+    title: "[setup] Cross-repo API client generation from OpenAPI contracts"
+    template: C08-api-client-gen.md
+    priority: P2
+    owner: AI
+    applies_to: fullstack
+    idempotent_check: "grep -q 'openapi-typescript\\|openapi-generator' $FE_REPO/package.json 2>/dev/null"
+    depends_on: [S15, C5]

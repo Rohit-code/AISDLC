@@ -1,0 +1,56 @@
+# voice-s2s setup tickets — OpenAI Realtime / streaming voice
+# Layered on top of _common/manifest.yml. Some S-tickets are REPLACED by V-tickets.
+
+overrides:
+  # These _common tickets are replaced, not extended
+  - skip: S12   # replaced by V2 (Tech Architecture — Voice)
+  - skip: S15   # replaced by V3 (event contracts, not REST)
+
+tickets:
+  - id: V1
+    title: "[setup] Create .claude/stack-voice.yml — Realtime API config, codecs, latency budgets"
+    template: V01-stack-voice-config.md
+    priority: P1
+    owner: Tech
+    idempotent_check: "test -f .claude/stack-voice.yml"
+    depends_on: []
+
+  - id: V2
+    title: "[setup] Generate TECH-Architecture-Voice.md — streaming flow, state, reconnection"
+    template: V02-tech-architecture-voice.md
+    priority: P1
+    owner: AI
+    idempotent_check: "test -f $MAIN_REPO/docs/TECH-Architecture-Voice.md"
+    depends_on: [S11, V1]
+
+  - id: V3
+    title: "[setup] Define event/message schema contracts (not REST)"
+    template: V03-event-contracts.md
+    priority: P1
+    owner: AI
+    idempotent_check: "test -f $CONTEXT_DIR/contracts/events.yaml"
+    depends_on: [S1, V2]
+
+  - id: V4
+    title: "[setup] Voice test infrastructure — mock Realtime API, audio fixtures, flow tests"
+    template: V04-voice-test-infra.md
+    priority: P1
+    owner: AI
+    idempotent_check: "test -d $MAIN_REPO/tests/fixtures/audio && test -f $MAIN_REPO/tests/mocks/realtime.py"
+    depends_on: [S14, V3]
+
+  - id: V5
+    title: "[setup] Latency instrumentation — per-hop timing (mic→ASR→LLM→TTS→speaker)"
+    template: V05-latency-instrumentation.md
+    priority: P1
+    owner: AI
+    idempotent_check: "grep -qrE 'latency_hop|trace_span.*voice' $MAIN_REPO/ 2>/dev/null"
+    depends_on: [V2]
+
+  - id: V6
+    title: "[setup] Session state persistence + reconnection tests"
+    template: V06-session-state-tests.md
+    priority: P1
+    owner: AI
+    idempotent_check: "grep -qrE 'test_reconnect|test_session_resume' $MAIN_REPO/tests/ 2>/dev/null"
+    depends_on: [V4]

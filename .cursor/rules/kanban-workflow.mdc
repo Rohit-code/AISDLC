@@ -1,0 +1,52 @@
+---
+description: Kanban workflow — how tickets move through the 12-column pipeline
+alwaysApply: true
+---
+
+# Kanban Workflow
+
+**Canonical rule**: `../../.claude/rules/kanban-workflow.md` — full column ownership, SLAs, and transition rules.
+
+**Board config**: `.claude/board-config.yml` in the project workspace root — contains `project_id`, `status_field_id`, and option UUIDs for the project's board.
+
+## Summary
+
+12-column pipeline: Backlog → FRD Draft → FRD Tech Plan → Tech Plan Approved → AI Development → Code Review → Staging Ready → Staging Review → Rework → Ready for Production → Done (+ Hotfix lane).
+
+## AI autonomy depends on operating mode
+
+Read the project's `.claude/stack-*.yml` `framework.mode` field (source of truth) and the `solo-vs-team-mode` rule.
+
+- **Solo mode**: AI may **self-promote tickets** through every column except ✅ Done. Log each autonomous move as a ticket comment.
+- **Team mode**: AI only moves tickets **out of** AI-active columns. Waits for humans to move tickets **into** AI-active columns.
+
+Comment shape for any AI-initiated move:
+
+```
+Moved to <column> under <mode> mode on <YYYY-MM-DD>.
+```
+
+## AI-active columns (work happens here)
+
+`🤖 FRD Tech Plan`, `💻 AI Development`, `🧪 Staging Ready`, `🔄 Rework`, `🚨 Hotfix`.
+
+## How to move a ticket
+
+```bash
+# 1. Get item ID
+gh project item-list <project_number> --owner <org> --format json
+
+# 2. Move ticket (IDs from .claude/board-config.yml)
+gh project item-edit \
+  --project-id <project_id> \
+  --id <item_id> \
+  --field-id <status_field_id> \
+  --single-select-option-id <status_option_id>
+```
+
+## Hard rules (apply in every mode)
+
+- **Verification Gate** must pass before moving out of any AI-active column — pasted command output on the ticket.
+- **Never merge to `master` / `main` / `dev`** — only to release branches (e.g. `release/ai-sdlc-v1`).
+- **✅ Done is human-only** — AI never moves a ticket to Done, regardless of mode.
+- **Hard stops** (destructive ops, financial, auth/permissions/secrets) still require chat confirmation.

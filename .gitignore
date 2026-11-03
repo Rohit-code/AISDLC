@@ -1,0 +1,12 @@
+# Project repos (each has its own git)
+erp-core/
+erp-fe/
+
+# Per-project context repos (each has its own git)
+erp-context/
+
+# OS files
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json

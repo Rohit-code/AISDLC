@@ -1,0 +1,68 @@
+---
+description: Source-control policy — use gh and glab CLIs, never raw API or MCP for git hosts
+alwaysApply: true
+---
+
+# Source Control — CLI-First Policy
+
+All GitHub and GitLab operations (issues, PRs/MRs, projects/boards, releases) go through the official CLIs. This keeps the SDLC **tool-agnostic** — the same commands work in Claude Code, Cursor, or a plain terminal.
+
+## Tools
+
+- **GitHub**: `gh` CLI.
+- **GitLab**: `glab` CLI.
+
+## Which host per repo
+
+Each project declares its repos and hosts in `.claude/stack-*.yml`. Agents read that config to determine which CLI to use per repo.
+
+## Common operations
+
+### GitHub (issues + boards)
+
+```bash
+# Issues
+gh issue list --repo <owner>/<repo>
+gh issue view <number> --repo <owner>/<repo>
+gh issue create --repo <owner>/<repo> --title "..." --body "..."
+
+# Board — read IDs from .claude/board-config.yml
+gh project item-list <project_number> --owner <org> --format json
+gh project item-edit \
+  --project-id <project_id> \
+  --id <item_id> \
+  --field-id <status_field_id> \
+  --single-select-option-id <status_option_id>
+```
+
+### GitLab (MRs)
+
+```bash
+glab mr list
+glab mr view <number>
+glab mr create --source-branch feature/<id>-<slug> \
+               --target-branch <release-branch> \
+               --title "<id>: <what>" \
+               --description "..." \
+               --remove-source-branch
+glab mr merge <number>
+```
+
+## Hard rules
+
+- **No raw API calls** (`curl` against `api.github.com` / `gitlab.com/api`) unless the CLI genuinely doesn't cover it. Prefer `gh api` / `glab api` if needed.
+- **No MCP for git hosts** — CLI-based for portability across AI tools. (Client-side trackers like Jira may use MCPs — see `../../.claude/rules/F12-tracker-abstraction` once F12 lands.)
+- **Never push** to `master` / `main` / `dev`. PRs/MRs target the project's declared release branch only.
+- **Never open a PR/MR** from the default branch — always from `feature/<ticket-id>-<slug>` or `chore/<slug>`.
+- **PR/MR title format**: `<ticket-id>: <what changed>`.
+- **PR/MR body** must link the ticket and summarize the change, per `size-audit` and `agent-communication` rules.
+
+## Pre-flight checklist for agents
+
+Before opening any PR/MR:
+
+- [ ] Tests green (Verification Gate passed).
+- [ ] Lints clean.
+- [ ] No secrets in diff (see `secrets-management`).
+- [ ] Ticket is in the correct column (see `kanban-workflow`).
+- [ ] PR/MR size respects `size-audit`.

@@ -1,0 +1,69 @@
+---
+description: Framework gap capture — AI proactively files gap tickets on AISDLC board, no gate, no pause
+alwaysApply: true
+---
+
+# Framework Observation — Proactive Gap Capture
+
+**Canonical rule**: `../../.claude/rules/framework-observation.md` — read it for full triggers, ticket shape, command, and enforcement.
+
+## The rule (one sentence)
+
+When a framework gap is **observed** — by AI itself, or expressed by a human in chat — file a one-line Backlog ticket on the AISDLC framework board and continue the project ticket. **Do not ask for permission.** No gate. No plan. No pause.
+
+## Four gap triggers
+
+1. **Rule-silence** — a canonical rule is silent on the case you just hit.
+2. **Pattern-repeat** — the same workaround has come up 2+ times.
+3. **Reality-drift** — the framework and reality disagree.
+4. **Agent-gap** — canonical agent spec is missing guidance you needed.
+
+Any of these → file, continue working.
+
+## Two observation sources
+
+- **Self-detection**: AI notices the gap while working on a project ticket. Files automatically.
+- **Human-expressed**: the human mentions the gap in chat (explicit complaint, implicit workaround mention, or asking whether to file). AI files it **without asking back**.
+
+**Bias toward over-capture.** If a chat signal plausibly maps to a gap trigger, file it. Don't ask "should I file this?" — just file. Cost of dup is low; cost of missed signal is high.
+
+## How to file
+
+```bash
+# Raw gh (works today)
+gh issue create --repo <owner>/AISDLC \
+  --title "Framework gap: <one-line summary>" \
+  --body "<structured body — see canonical rule>"
+
+# Then add to the framework board Backlog with gap:<type> label
+```
+
+Wrapper script (once it's built): `bin/aisdlc-observe.sh`.
+
+## Mirror in chat (F39 Rule 3)
+
+After filing, report in chat:
+
+```
+AISDLC#<N>: Framework gap filed. <link>.
+```
+
+## Hard non-negotiables
+
+- **No gate.** Zero ceremony.
+- **Backlog only** — never skip into FRD Draft.
+- **One ticket per gap** — never bundle.
+- **Don't pause the project ticket** — filing is parallel work.
+- **Framework board only** — project bugs go on project board per `ticket-discipline.md` Rule 1.
+
+## What's NOT a framework gap
+
+- Project-specific bugs → project board.
+- Genuine questions where you can infer intent → ask in chat.
+- Opinions / preferences → skip.
+
+## See also
+
+- `ticket-discipline.mdc` (F39 — dual-channel status)
+- `size-audit.mdc` (F1 — same capture-first pattern for tech-debt)
+- `Board-Labels.md` (`gap:rule`, `gap:pattern`, `gap:drift`, `gap:agent`)

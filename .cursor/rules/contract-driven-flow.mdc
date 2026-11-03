@@ -1,0 +1,79 @@
+---
+description: Contract-driven feature flow for API+FE projects — parent/BE/FE/Contract sub-issues, validation gate, TDD
+alwaysApply: true
+---
+
+# Contract-Driven Feature Flow
+
+**Canonical rule**: `../../.claude/rules/contract-driven-flow.md` — read it for full triggers, examples, and exception cases.
+
+## Five hard rules
+
+### 1. Parent ticket structure (required sections)
+
+Every feature has a parent ticket with these sections, enforced at FRD drafting:
+
+- Problem + user story
+- Scope / Out-of-scope
+- Acceptance criteria (testable)
+- Affected surfaces (BE endpoints, FE screens, DB models, external integrations)
+- Migration / gap callouts (data migrations, schema, env vars, feature flags, rollout, rollback)
+
+Template: `../../templates/FRD-TEMPLATE.md`.
+
+### 2. Three sub-issues per feature (BE + FE projects)
+
+| Sub-issue | Title |
+|---|---|
+| `[Contract] <feature>` | Tagged to BOTH BE + FE devs |
+| `[BE] <feature>` | Tagged to BE dev / `@builder` |
+| `[FE] <feature>` | Tagged to FE dev / `@fe-builder` |
+
+Linked via real GitHub sub-issues (F32 pattern, not draft items, not flat lists).
+
+### 3. Contract validation gate (no code until both approve)
+
+1. `@planner` drafts contract at `<project>-context/contracts/<feature>.yaml` (OpenAPI 3.0 per template).
+2. Both BE and FE leave approval comments on the Contract sub-issue.
+3. Only after both approvals does the parent ticket move to 💻 AI Development.
+4. `@ticket-manager` blocks premature transitions.
+
+Approval shape: `Approved (BE): <one-line justification>.` or `Approved (FE): ...`.
+
+In solo mode, one human approves both sides (reviewing with BE and FE lenses).
+
+### 4. TDD on both sides
+
+`@tester` writes failing tests from the contract BEFORE any production code:
+- **BE**: pytest covering happy path, error cases, permissions.
+- **FE**: RTL / Vitest with mocked API responses per contract.
+
+Tests must fail initially. If they pass without implementation, the test is wrong.
+
+### 5. Migration / gap callouts — populated at FRD, re-validated at build
+
+FRD must populate the Migration / gap callouts section. `@builder` re-reads at build start. New discoveries trigger `scope-discrepancy escalation` (see `size-audit.md`).
+
+Common categories: data migrations, schema (expand/contract), env vars, feature flags, rollout, rollback plan.
+
+## Enforcement
+
+| Agent | Owns |
+|---|---|
+| `@planner` | Rule 1, Rule 2 (creation), Rule 3 (draft + request), Rule 5 (populate) |
+| `@tester` | Rule 4 |
+| `@ticket-manager` | Rule 3 (gate), Rule 5 (check populated) |
+| `@builder`, `@fe-builder` | Rule 5 (re-validate) |
+
+## When to skip
+
+- Pure docs / CI / dep bumps: file ticket (per `ticket-discipline.md`), skip parent-sub + contract gate.
+- Bug fixes where contract hasn't changed: one ticket is enough.
+- 🚨 Hotfix lane: urgency trumps ceremony.
+
+## See also
+
+- Canonical rule: `../../.claude/rules/contract-driven-flow.md`
+- Parent/sub pattern: `../../.claude/rules/agent-communication.md` (F32)
+- Ticket discipline: `ticket-discipline.mdc` (F39)
+- Size audit + scope escalation: `size-audit.mdc`

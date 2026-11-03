@@ -1,0 +1,21 @@
+---
+description: Inter-agent and parent-child ticket communication conventions
+---
+
+# Agent Communication
+
+**Canonical rule**: `../../.claude/rules/agent-communication.md` — read it before coordinating work across tickets or personas.
+
+## Triggers — adopt this rule when
+
+- Working on a ticket that has sub-issues or a parent issue.
+- Handing off between personas (planner → builder, builder → tester, tester → shipper).
+- Writing a PR description that other agents will read to continue work.
+- A task spans multiple repos (cross-repo batch pattern).
+
+## Key principles
+
+- State is carried on the **ticket** and in **PR / MR descriptions**, not in chat history.
+- Parent tickets summarize; sub-issues carry execution detail.
+- Every persona handoff writes a short status note on the ticket so the next persona can pick up cleanly.
+- When a ticket touches N repos with the same logical change, use the cross-repo batch pattern (one ticket, one update covering all repos).
