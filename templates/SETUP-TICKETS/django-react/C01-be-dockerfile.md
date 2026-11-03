@@ -38,7 +38,7 @@ Multi-stage keeps images lean. Deps installed once, copied to minimal runtime. S
 
 ## Idempotent check
 ```bash
-test -f $BE_REPO/Dockerfile
+test -f "$BE_REPO/Dockerfile"
 ```
 
 ## Acceptance

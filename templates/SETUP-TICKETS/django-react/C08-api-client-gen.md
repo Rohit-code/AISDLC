@@ -29,7 +29,7 @@ Hand-written API clients drift from the contract. Generated clients stay in lock
 
 ## Idempotent check
 ```bash
-grep -q 'openapi-typescript\|openapi-generator' $FE_REPO/package.json 2>/dev/null
+grep -qE "openapi-typescript|openapi-generator" "$FE_REPO/package.json" 2>/dev/null
 ```
 
 ## Acceptance

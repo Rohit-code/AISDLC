@@ -12,8 +12,9 @@ Pick the pattern that matches the stack:
 **Docker Compose (BE services, DB, queues)**:
 1. Write `docker-compose.yml` with services, networks, env_file references
 2. Use `env_file: .env` — never inline secrets
-3. Document `docker compose up -d` in CLAUDE.md
-4. Verify: `docker compose up -d && curl localhost:<port>/health` returns 200
+3. Publish dependency ports on non-default host ports (e.g. `55432:5432`), so a dev stack never clashes with another project's Postgres/Redis/Kafka on 5432/6379/9092
+4. Document `docker compose up -d` in CLAUDE.md
+5. Verify: `docker compose up -d && curl localhost:<port>/health` returns 200
 
 **Makefile (simpler stacks)**:
 1. Write `Makefile` with `make dev`, `make test`, `make lint` targets
@@ -25,7 +26,7 @@ Pick the pattern that matches the stack:
 
 ## Idempotent check
 ```bash
-test -f $MAIN_REPO/docker-compose.yml || test -f $MAIN_REPO/Makefile
+test -f "$MAIN_REPO/docker-compose.yml" || test -f "$MAIN_REPO/compose.yaml" || test -f "$MAIN_REPO/Makefile"
 ```
 
 ## Acceptance

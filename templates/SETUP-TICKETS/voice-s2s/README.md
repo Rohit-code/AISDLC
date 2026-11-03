@@ -43,7 +43,7 @@ V-tickets fill the gaps where universal S-tickets don't fit:
 ## Invoked by
 
 ```bash
-/aisdlc-init <project> --stack=voice-s2s --repos=voice-orchestrator,voice-client
+/aisdlc-init <project> --stack=voice-s2s --repos=<project>-orchestrator:voice,<project>-client:voice
 ```
 
 ## Known traps

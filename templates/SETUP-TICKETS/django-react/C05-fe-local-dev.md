@@ -27,7 +27,7 @@ For each FE repo:
 
 ## Idempotent check
 ```bash
-test -f $FE_REPO/.env.example && test -f $FE_REPO/CLAUDE.md
+test -f "$FE_REPO/.env.example" && test -f "$FE_REPO/CLAUDE.md"
 ```
 
 ## Acceptance

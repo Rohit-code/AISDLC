@@ -2,6 +2,8 @@
 
 Hard rules for how AI (and humans) manage tickets. Covers intake, blocker tracking, dual-channel status, and chat-to-ticket creation.
 
+"The board" is the project board named by the stack file's `board_config`. If that file does not exist, do not invent IDs — stop and ask the user to run `/aisdlc-init`. ERP plan tickets are tracked in the owner's Google Sheet until then (`.claude/rules/erp-guardrails.md`).
+
 These rules exist because three failure patterns kept recurring in client engagements:
 
 - Dev work happened off the board; when clients asked "why is this slow?" there was no paper trail.
@@ -22,7 +24,7 @@ Every feature, fix, or change of >15 minutes of work must be a ticket on the pro
 ### Exceptions (narrow, explicit)
 - Read-only investigation (no code change, no state change).
 - Fixing your own local environment (not committing anything).
-- Hotfix lane — a ticket is still created, but after the fix. Never before.
+- Hotfix lane — the ticket is created first (in 🚨 Hotfix), then the fix, then the FRD is written retroactively after (`.claude/rules/kanban-workflow.md`, Hotfix Flow).
 
 ---
 
@@ -67,7 +69,7 @@ When work on a ticket is blocked by something outside the dev team — client in
 3. Resume ticket work.
 
 ### Why this matters
-Three months from now, when someone asks why a feature slipped, the board answers. "Dev was slow" never wins an argument against "4 days waiting on the payment gateway webhook secret, product was tagged on day 1."
+Three months from now, when someone asks why a feature slipped, the board answers. "Dev was slow" never wins an argument against "4 days waiting on the bank-connector API key, product was tagged on day 1."
 
 ---
 
@@ -87,7 +89,7 @@ Every AI agent stage transition, decision, or blocker must be posted in **both**
 ### Examples
 
 - `#45: Moved to Staging Ready. Tests green, staging deployed. https://.../pull/123`
-- `#47: Blocked on payment gateway webhook secret, tagged @tech-lead. https://.../issues/47#issuecomment-...`
+- `#47: Blocked on SMTP credentials for invoice emails, tagged @tech-lead. https://.../issues/47#issuecomment-...`
 - `#51: Filed. FRD drafted, pending triage. https://.../issues/51`
 
 ### Why this matters
@@ -111,7 +113,7 @@ A chat message with:
 
 ### AI behavior
 
-1. **If the description is clear enough**: draft the ticket using `../templates/FRD-TEMPLATE.md`, file it on the project board (Backlog in team mode, FRD Draft in solo mode).
+1. **If the description is clear enough**: draft the ticket using `templates/FRD-TEMPLATE.md`, file it on the project board (Backlog in team mode, FRD Draft in solo mode).
 2. **If ambiguous on one point**: ask one clarifying question in chat. Only one. Then file.
 3. **If ambiguous on multiple points**: file in Backlog with an `incomplete-spec` note, leave clarifying questions as ticket comments (not chat interruptions), ping triage.
 
@@ -130,7 +132,7 @@ Board admin friction is what makes teams hate SDLC frameworks. Removing it is a 
 
 ## Interaction with other rules
 
-- **Verification Gate** (`kanban-workflow.md`): dual-channel status (Rule 3) means the Verification Gate evidence is posted on the ticket *and* summarized in chat when the gate passes.
+- **Verification Gate** (`.claude/agents/builder.md`): dual-channel status (Rule 3) means the Verification Gate evidence is posted on the ticket *and* summarized in chat when the gate passes.
 - **Solo / team mode** (`solo-vs-team-mode.md`): Rule 3's chat mirroring applies in both modes. Rule 4's intake destination (Backlog vs FRD Draft) differs by mode.
 - **Size audit** (`size-audit.md`): tech-debt tickets auto-filed during audits must also mirror in chat per Rule 3.
 - **Framework gap capture** (`framework-observation.md`, F38): same dual-channel discipline applies to framework-board filings — ticket comment + chat summary.

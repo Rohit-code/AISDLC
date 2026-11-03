@@ -184,7 +184,7 @@ That's the whole interface. Five minutes to file, problem solved.
 
 ## Questions
 
-- **What if my problem is urgent?** — File it as usual but add `urgent` to the title. Triage will see it sooner. For actual production fires, use the 🚨 Hotfix flow (talk to the framework owner).
+- **What if my problem is urgent?** — File it as usual but add `urgent` to the title. Triage will see it sooner. For actual production fires, ask the tech lead to put it in the 🚨 Hotfix lane (a human moves it in; `@shipper` handles the hotfix branch and PR).
 - **What if I already know the fix?** — Great, write it in the Context section as "Suggested fix: …". Don't put it in the Problem or Desired Outcome — those should describe the *user-visible* situation.
 - **What if I'm not sure if it's a bug or a feature?** — Doesn't matter. File it. Triage will decide.
 - **Can I file something I'm not sure about?** — Yes. Backlog has no commitment. "I noticed something weird, here's what I saw" is a valid ticket.

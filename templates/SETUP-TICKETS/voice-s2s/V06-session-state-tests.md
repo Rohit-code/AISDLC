@@ -39,7 +39,7 @@ Without reconnect handling, a 10-second network blip means the user has to resta
 
 ## Idempotent check
 ```bash
-grep -qrE 'test_reconnect|test_session_resume' $MAIN_REPO/tests/ 2>/dev/null
+grep -qrE "test_reconnect|test_session_resume" "$MAIN_REPO/tests" 2>/dev/null
 ```
 
 ## Acceptance

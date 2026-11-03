@@ -48,7 +48,7 @@ These strings, names, or concepts must be **stripped** from any artifact before 
 
 ### File paths and structures
 - `.claude/` (the entire directory and any file under it)
-- `.claude/rules/`, `.claude/agents/`, `.claude/stack-*.yml`
+- `.claude/rules/`, `.claude/agents/`, `.claude/stack-be.yml`, `.claude/stack-fe.yml`
 - `<project>-context/` (any reference to the per-project meta repo)
 - `templates/FRD-TEMPLATE.md`, `templates/EXECUTION-PLAN-TEMPLATE.md`, etc.
 - `docs/Framework-Wiki.md`, `docs/framework-board-reference.md`
@@ -68,7 +68,7 @@ These are explicitly fine. Use them confidently:
 - ✅ "We have an internal AI-assisted development process with verification at every step."
 - ✅ "Our engineers work with AI as a collaborator — they own the design and review, AI does the heavy lifting on implementation."
 - ✅ "Yes, we use Claude / GPT / similar models." (naming the underlying AI is fine)
-- ✅ Standard `Co-Authored-By: Claude <noreply@anthropic.com>` in commits (this is industry-standard and expected)
+- ✅ Commit attribution exactly as `commit_attribution` in the stack file says (`.claude/rules/source-control.md`). For ERP it is `none`: never add Co-Authored-By / "Generated with" / Claude-Session lines.
 - ✅ The actual code, PRs, commits, and tests in the client's repos
 - ✅ Engineering decisions framed in plain technical language ("we extracted the helpers into a separate module", "we added integration tests for the cancel flow")
 
@@ -103,7 +103,7 @@ The sanitization pass cannot:
 - Add false claims about our process to make it sound less AI-heavy
 - Hide that AI was used (clients know — be honest)
 - Misattribute AI work to a human engineer
-- Strip the standard `Co-Authored-By: Claude` line (industry-standard, do not remove)
+- Change commit attribution away from what `commit_attribution` in the stack file says — follow it (`.claude/rules/source-control.md`); for ERP it is `none`, so never add Co-Authored-By / "Generated with" / Claude-Session lines
 
 The boundary protects the *methodology*, not the *fact of AI use*.
 

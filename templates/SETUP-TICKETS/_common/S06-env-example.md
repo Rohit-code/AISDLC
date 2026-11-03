@@ -7,13 +7,13 @@ Every repo that uses environment variables must have a committed `.env.example` 
 Engineers need a starting point for their local `.env`. Without `.env.example`, setup becomes tribal knowledge. With real-looking values in `.env.example`, people commit them thinking they're fake. So placeholders must be obviously fake.
 
 ## Steps
-1. For each repo that loads env vars, derive the list of required vars (grep for `os.environ`, `process.env`, `import.meta.env`)
+1. For each repo that loads env vars, derive the list of required vars (grep for `${...}` in `application*.yml`, `System.getenv`, `os.environ`, `process.env`, `import.meta.env`)
 2. Write `.env.example` with entries like:
    ```
    # ✅ Good placeholders — obviously fake
-   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+   DATABASE_URL=postgresql://user:password@localhost:<db-port>/dbname
    API_KEY=your_api_key_here
-   PAYMENT_GATEWAY_KEY_ID=test_REPLACE_ME
+   BANK_API_KEY=test_REPLACE_ME
 
    # ❌ Bad — looks real
    # API_KEY=sk-ant-api03-actualKeyHere
@@ -23,7 +23,7 @@ Engineers need a starting point for their local `.env`. Without `.env.example`, 
 
 ## Idempotent check
 ```bash
-test -f $MAIN_REPO/.env.example
+test -f "$MAIN_REPO/.env.example"
 ```
 
 ## Acceptance

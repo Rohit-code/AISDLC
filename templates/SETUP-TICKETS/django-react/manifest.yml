@@ -1,5 +1,6 @@
 # django-react setup tickets — Django BE + React/Next FEs
 # Layered on top of _common/manifest.yml. Init runs _common first, then this.
+# Variables and keys: see the header of _common/manifest.yml and ../README.md.
 
 tickets:
   - id: C1
@@ -8,7 +9,7 @@ tickets:
     priority: P1
     owner: AI
     applies_to: backend
-    idempotent_check: "test -f $BE_REPO/Dockerfile"
+    idempotent_check: 'test -f "$BE_REPO/Dockerfile"'
     depends_on: [S4]
 
   - id: C2
@@ -17,7 +18,7 @@ tickets:
     priority: P1
     owner: AI
     applies_to: backend
-    idempotent_check: "grep -qE 'postgres|redis' $BE_REPO/docker-compose.yml 2>/dev/null"
+    idempotent_check: 'grep -qE "postgres|redis" "$BE_REPO/docker-compose.yml" 2>/dev/null'
     depends_on: [S6, C1]
 
   - id: C3
@@ -26,7 +27,7 @@ tickets:
     priority: P1
     owner: AI
     applies_to: backend
-    idempotent_check: "test -f $BE_REPO/tests/conftest.py && test -f $BE_REPO/tests/factories.py"
+    idempotent_check: 'test -f "$BE_REPO/tests/conftest.py" && test -f "$BE_REPO/tests/factories.py"'
     depends_on: [C2]
 
   - id: C4
@@ -35,7 +36,7 @@ tickets:
     priority: P1
     owner: AI
     applies_to: backend
-    idempotent_check: "test -f $BE_REPO/*/settings_test.py 2>/dev/null"
+    idempotent_check: 'ls "$BE_REPO"/*/settings_test.py >/dev/null 2>&1'
     depends_on: [C3]
 
   - id: C5
@@ -44,7 +45,7 @@ tickets:
     priority: P1
     owner: AI
     applies_to: frontend
-    idempotent_check: "test -f $FE_REPO/.env.example && test -f $FE_REPO/CLAUDE.md"
+    idempotent_check: 'test -f "$FE_REPO/.env.example" && test -f "$FE_REPO/CLAUDE.md"'
     depends_on: [S4]
     runs_per: frontend_repo   # runs once per FE repo
 
@@ -54,7 +55,7 @@ tickets:
     priority: P2
     owner: AI
     applies_to: frontend
-    idempotent_check: "grep -q '@theme\\|theme.extend' $FE_REPO/tailwind.config.* $FE_REPO/src/index.css 2>/dev/null"
+    idempotent_check: 'cat "$FE_REPO"/tailwind.config.* "$FE_REPO/src/index.css" 2>/dev/null | grep -qE "@theme|theme\.extend|extend:"'
     depends_on: [C5]
     runs_per: frontend_repo
 
@@ -64,7 +65,7 @@ tickets:
     priority: P2
     owner: AI
     applies_to: frontend
-    idempotent_check: "grep -qE 'vitest|jest' $FE_REPO/package.json"
+    idempotent_check: 'grep -qE "vitest|jest" "$FE_REPO/package.json" 2>/dev/null'
     depends_on: [C5]
     runs_per: frontend_repo
 
@@ -74,5 +75,6 @@ tickets:
     priority: P2
     owner: AI
     applies_to: fullstack
-    idempotent_check: "grep -q 'openapi-typescript\\|openapi-generator' $FE_REPO/package.json 2>/dev/null"
+    idempotent_check: 'grep -qE "openapi-typescript|openapi-generator" "$FE_REPO/package.json" 2>/dev/null'
     depends_on: [S15, C5]
+    runs_per: frontend_repo

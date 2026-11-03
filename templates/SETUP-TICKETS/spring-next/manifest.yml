@@ -1,0 +1,92 @@
+# spring-next setup tickets — Spring Boot 3.5 / Java 21 BE + Next.js 15 FE(s)
+# Layered on top of _common/manifest.yml. Init runs _common first, then this.
+# Variables and keys: see the header of _common/manifest.yml and ../README.md.
+
+overrides:
+  - skip: S14   # replaced by J03 (BE test infra) + J07 (FE test infra)
+
+tickets:
+  - id: J01
+    title: "[setup] BE Dockerfile — Maven wrapper multi-stage build"
+    template: J01-be-dockerfile.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: 'test -f "$BE_REPO/Dockerfile" && grep -q "mvnw" "$BE_REPO/Dockerfile"'
+    depends_on: [S4]
+
+  - id: J02
+    title: "[setup] BE docker-compose dev deps — Postgres 16, Redis, Kafka on non-default host ports"
+    template: J02-be-docker-compose.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: 'grep -q "postgres:16" "$BE_REPO/docker-compose.yml" 2>/dev/null && ! grep -qE "[\"[:space:]:-](5432|5433|6379|9092):" "$BE_REPO/docker-compose.yml"'
+    depends_on: [S6]
+
+  - id: J03
+    title: "[setup] BE test infra — JUnit 5 + real Postgres (Testcontainers or local mode)"
+    template: J03-be-test-infra.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: 'test -x "$BE_REPO/mvnw" && { cat "$BE_REPO/pom.xml" 2>/dev/null | grep -q testcontainers || grep -rqs "TEST_INFRA" "$BE_REPO/src/test"; }'
+    depends_on: [S7, J02]
+
+  - id: J04
+    title: "[setup] BE Flyway migrations + migration number register"
+    template: J04-be-flyway-register.md
+    priority: P1
+    owner: AI
+    applies_to: backend
+    idempotent_check: 'test -f "$BE_REPO/docs/db/flyway-number-register.md" && ls "$BE_REPO"/src/main/resources/db/migration/V*.sql >/dev/null 2>&1'
+    depends_on: [J03]
+
+  - id: J05
+    title: "[setup] BE OpenAPI spec via springdoc"
+    template: J05-be-openapi-springdoc.md
+    priority: P2
+    owner: AI
+    applies_to: backend
+    idempotent_check: 'cat "$BE_REPO/pom.xml" 2>/dev/null | grep -q "springdoc-openapi"'
+    depends_on: [S4]
+
+  - id: J06
+    title: "[setup] FE local dev setup (per FE repo)"
+    template: J06-fe-local-dev.md
+    priority: P1
+    owner: AI
+    applies_to: frontend
+    idempotent_check: 'test -f "$FE_REPO/.env.example" && test -f "$FE_REPO/CLAUDE.md"'
+    depends_on: [S4]
+    runs_per: frontend_repo
+
+  - id: J07
+    title: "[setup] FE Vitest + Testing Library + tsc --noEmit (per FE repo)"
+    template: J07-fe-test-setup.md
+    priority: P1
+    owner: AI
+    applies_to: frontend
+    idempotent_check: 'grep -q "\"vitest\"" "$FE_REPO/package.json" 2>/dev/null && ls "$FE_REPO"/vitest.config.* >/dev/null 2>&1'
+    depends_on: [J06]
+    runs_per: frontend_repo
+
+  - id: J08
+    title: "[setup] FE rem-based design tokens + no-px test (per FE repo)"
+    template: J08-fe-design-tokens.md
+    priority: P2
+    owner: AI
+    applies_to: frontend
+    idempotent_check: 'test -f "$FE_REPO/src/test/no-px.test.ts"'
+    depends_on: [J07]
+    runs_per: frontend_repo
+
+  - id: J09
+    title: "[setup] FE API types from OpenAPI (openapi-typescript)"
+    template: J09-fe-openapi-types.md
+    priority: P2
+    owner: AI
+    applies_to: fullstack
+    idempotent_check: 'grep -q "openapi-typescript" "$FE_REPO/package.json" 2>/dev/null'
+    depends_on: [S15, J05, J06]
+    runs_per: frontend_repo

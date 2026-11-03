@@ -40,12 +40,13 @@ Every repo that uses environment variables must have:
 The `.env.example` file uses obviously fake values:
 ```
 # ✅ Good .env.example
-PAYMENT_GATEWAY_KEY_ID=test_REPLACE_ME
-PAYMENT_GATEWAY_KEY_SECRET=your_test_secret_here
+SMTP_USERNAME=REPLACE_ME
+SMTP_PASSWORD=your_smtp_password_here
+BANK_CONNECTOR_API_KEY=test_REPLACE_ME
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 
 # ❌ Bad .env.example (these look real)
-PAYMENT_GATEWAY_KEY_ID=live_abc123xyz
+BANK_CONNECTOR_API_KEY=live_abc123xyz
 API_KEY=sk-ant-api03-actualKeyHere
 ```
 
@@ -57,7 +58,7 @@ When an agent discovers committed secrets during any work:
 2. **Do NOT paste the secret in a ticket comment** — describe what was found without exposing the value
 3. **Create a P0 security ticket** with:
    - Which repo and file(s) contain the leak
-   - Which services are affected (e.g., "payment gateway production keys")
+   - Which services are affected (e.g., "bank-connector API key", "SMTP credentials used for invoice emails")
    - Whether the keys are in current files or only in git history
 4. **Immediate fix**: add `.env` to `.gitignore` + `git rm --cached .env` to untrack (does not delete the file locally)
 5. **Flag for key rotation** — the P0 ticket must note that committed keys need rotation even after removal, because they remain in git history
@@ -90,7 +91,7 @@ services:
 services:
   web:
     environment:
-      PAYMENT_GATEWAY_KEY: live_abc123
+      BANK_CONNECTOR_API_KEY: live_abc123
       CLAUDE_API_KEY: sk-ant-...
 ```
 

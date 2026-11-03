@@ -32,9 +32,9 @@ FE thresholds are lower than BE because components should be small and composabl
 ## Adapting thresholds to other stacks
 
 These thresholds are starting points, not stack-specific truths. When using AISDLC on a new project:
-- Read `stack-*.yml` to know the tech stack
+- Read the stack file (`.claude/stack-be.yml` / `.claude/stack-fe.yml`) to know the tech stack
 - Use the closest threshold table above as a starting point
-- Adjust based on the stack's idioms (e.g., Go and Java files tend to be longer than Python; Vue SFCs include template + script + style)
+- Adjust based on the stack's idioms (e.g., Java service classes in Spring Boot tend to run longer than Next.js components; a Next.js `page.tsx` that also holds data fetching and modals is a screen, not a component)
 - Document any project-specific overrides in the project's `CLAUDE.md`
 
 These are floors, not ceilings — the agent uses judgement. A 900-line file that's a pure data table is fine; a 400-line method with 6 unrelated side effects is not.
@@ -65,13 +65,13 @@ When the audit hits **any red threshold**, the agent MUST:
 
 1. **Pause the current ticket** — do not proceed past the audit until a scope decision is made.
 2. **Post a scope question** on the current ticket naming the gap between ticket assumption and reality.
-3. **Create a tech-debt ticket** with label `tech-debt` in 📝 FRD Draft using the Tech-debt Observation format from `agent-communication.md`. One ticket per distinct debt — do not bundle ("split `InvoiceController`" and "extract the save-path side effects" are two tickets, not one).
+3. **Create a tech-debt ticket** with label `tech-debt` — in 📥 Backlog in team mode, 📝 FRD Draft allowed in solo mode — using the Tech-debt Observation format from `agent-communication.md`. One ticket per distinct debt — do not bundle ("split `InvoiceController`" and "extract the save-path side effects" are two tickets, not one).
 4. **Link** the tech-debt ticket back to the current ticket (`Discovered during #N`).
 5. **Propose a narrowed scope** for the current ticket that stays inside a single-session budget (see Complexity Budget below) and wait for Product to confirm.
 
 The current ticket is NOT blocked on the tech-debt work landing — it's blocked on the scope decision. Once Product confirms the narrowed scope, the agent resumes.
 
-Yellow thresholds do NOT auto-create a ticket — they get a one-line note in the audit comment ("⚠️ `foo.py` is 900 LOC, watch for growth") and the agent continues.
+Yellow thresholds do NOT auto-create a ticket — they get a one-line note in the audit comment ("⚠️ `billing/InvoiceService.java` is 900 LOC, watch for growth" or "⚠️ `app/invoices/page.tsx` is 550 LOC, watch for growth") and the agent continues.
 
 ## Scope-discrepancy escalation (hard rule)
 

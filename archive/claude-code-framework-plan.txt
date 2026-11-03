@@ -157,7 +157,7 @@ What gets logged:
 
 ## STAGE 4: FRD TECH PLAN REVIEW
 Owner: AI
-Column: 🤖 FRD Tech Plan Review
+Column: 🤖 FRD Tech Plan
 
 AI picks up the ticket. This is where AI THINKS.
 
@@ -1056,17 +1056,17 @@ Project ID: PVT_kwHOAy3qVs4BqCgb
 Status Field ID: PVTSSF_lAHOAy3qVs4BqCgbzhobWqk
 
 COLUMN OPTION IDS:
-  📝 FRD Draft              8c837498
-  🤖 FRD Tech Plan Review   63a0b10f
-  🔧 Tech Plan Approved     c2c8461e
-  💻 AI Development         9016f692
-  👀 Code Review            b35efeea
-  🧪 Staging Ready          9042d52e
-  🎭 Staging Review         61a830eb
-  🔄 Rework                 ec2363f8
-  🚀 Ready for Production   4bdda5f6
-  ✅ Done                   5a0a2d19
-  🚨 Hotfix                 7762c251
+  📝 FRD Draft              f53aadce
+  🤖 FRD Tech Plan   0e82ac14
+  🔧 Tech Plan Approved     3c789898
+  💻 AI Development         1532c4fe
+  👀 Code Review            eecd13bc
+  🧪 Staging Ready          78c3c6be
+  🎭 Staging Review         d160c394
+  🔄 Rework                 d74512aa
+  🚀 Ready for Production   8db01cfe
+  ✅ Done                   6e984c2c
+  🚨 Hotfix                 bb0d8213
 
 LABELS (apply to each repo):
   Workflow: frd-review, frd-approved, ai-blocked, needs-discussion

@@ -10,7 +10,7 @@ This is the mechanism that turns every project engagement into a framework learn
 
 When a framework gap is **observed** — by AI itself, or expressed by the human in chat — AI:
 
-1. Files a one-line Backlog ticket on the framework board via `gh` (or `bin/aisdlc-observe.sh` wrapper). **Does not ask for permission first.**
+1. Files a one-line Backlog ticket on the framework board with `bin/aisdlc-observe.sh` (see Command below). **Does not ask for permission first.**
 2. Continues the project ticket it was working on — does not block on the framework issue.
 3. Mirrors both actions in chat (per `ticket-discipline.md` Rule 3 dual-channel status).
 
@@ -80,36 +80,26 @@ triage
 
 ## Command
 
-Raw `gh`:
+Use the wrapper `bin/aisdlc-observe.sh` (run from the AISDLC root). It creates the issue in `Rohit-code/AISDLC`, applies the `gap:*` label, adds it to the framework board and sets 📥 Backlog (IDs from `.claude/board-config.yml`):
 
-```bash
-gh issue create --repo <owner>/AISDLC \
-  --title "Framework gap: <summary>" \
-  --body "$(cat <<EOF
-## Hit while working
-<project>#<N> — <description>
-
-## Gap type
-<type>
-
-## Context
-<1-3 lines>
-
-## Proposed next
-triage
-EOF
-)"
-
-# Then add to the framework board Backlog
+Usage:
+```
+bin/aisdlc-observe.sh --type <rule|pattern|drift|agent> \
+  --project <project-slug> \
+  --ticket <N> \
+  --summary "<one-line>" \
+  [--context "<1-3 lines>"] \
+  [--dry-run]
 ```
 
-Wrapper (once shipped): `bin/aisdlc-observe.sh` collapses the above into:
-
+Example:
 ```bash
-aisdlc observe --type rule-silence --project erp --ticket 45 \
+bin/aisdlc-observe.sh --type rule --project erp --ticket 45 \
   --summary "size-audit silent on scheduled-job classes" \
   --context "billing/InvoiceScheduler.java is 2100 LOC; no threshold defined for BE background-job files"
 ```
+
+`--type`, `--project`, `--ticket` and `--summary` are required; `--dry-run` prints what would be filed and calls nothing; `bin/aisdlc-observe.sh --help` prints the usage. If the script can't run, file the same ticket by hand with the commands in `.claude/rules/gh-recipes.md` (create issue in `Rohit-code/AISDLC`, add to board, set Status = 📥 Backlog).
 
 ---
 

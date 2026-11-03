@@ -1,6 +1,6 @@
 ### Decision: [Title]
 
-**Stage**: [1-10] | **Decided by**: [Product/Tech/AI] | **Date**: YYYY-MM-DD
+**Column**: [0-11, per `.claude/rules/kanban-workflow.md`] | **Decided by**: [Product/Tech/AI] | **Date**: YYYY-MM-DD
 
 **Context**: [Why this decision was needed]
 

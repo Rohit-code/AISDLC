@@ -1,31 +1,23 @@
 # <Project Name> — Agent Context
 
-This repo holds **agent-operational files** for the <Project Name> project. Indexes and contracts that AI agents read during planning and building. Not documentation — docs live in the code repos.
+This repo holds the **project docs and agent-operational files** for the <Project Name> project: docs, contracts and indexes that AI agents read during planning and building, plus the project's board config.
 
 ## What Lives Here
 
 ```
 <project>-context/
 ├── CLAUDE.md                        ← You are here
+├── board-config.yml                 ← Project board IDs
+├── docs/                            ← Product-Wiki.md, TECH-Architecture-BE.md, TECH-Architecture-FE.md
 ├── contracts/                       ← API contracts (OpenAPI 3.0) — published by @planner
 └── indexes/                         ← Codebase indexes — populated by size audits
     ├── Codebase-Index-BE.md         ← BE size audit — every file with LOC, RED/YELLOW status
     └── Codebase-Index-FE.md         ← FE size audit — every component with LOC, RED/YELLOW status
 ```
 
-## What lives where
-
-| Content | Location | Why |
-|---------|----------|-----|
-| Product Wiki | `<project>-be/docs/Product-Wiki.md` | Cross-cutting product doc, lives in main repo |
-| Tech Architecture BE | `<project>-be/docs/TECH-Architecture-BE.md` | Describes BE code, travels with BE code |
-| Tech Architecture FE | `<project>-fe/docs/TECH-Architecture-FE.md` | Describes FE code, travels with main FE repo |
-| API Contracts | `<project>-context/contracts/` | Agent-operational, published by @planner |
-| Codebase Indexes | `<project>-context/indexes/` | Agent-operational, populated by size audits |
-
 ## Board
 
-<!-- Fill in from .claude/board-config.yml -->
+<!-- Fill in from board-config.yml in this repo -->
 Board: [<Project> - AI SDLC Pipeline](<board URL>)
 
 ## Repos
@@ -37,4 +29,4 @@ Board: [<Project> - AI SDLC Pipeline](<board URL>)
 
 ## GitHub CLI
 
-Use `/opt/homebrew/bin/gh` for GitHub operations.
+Use plain `gh` for GitHub operations (recipes: `.claude/rules/gh-recipes.md` in the workspace (the AISDLC clone)). The board owner is a user login or an org: `--owner <owner>`.

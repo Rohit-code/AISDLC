@@ -56,10 +56,10 @@ See `.claude/rules/kanban-workflow.md` for full per-column ownership rules and v
 
 ## Operating modes (F13)
 
-- **Solo mode** — one human operator, AI runs autonomously. AI self-promotes tickets into AI-active columns and merges to release branches without per-merge approval.
-- **Team mode** — 2+ humans coordinate. AI only exits AI-active columns; humans move tickets into them. PR review is a human action.
+- **Solo mode** — one human operator, AI runs autonomously. AI may also move tickets into AI-active columns. It still never merges, never moves into 🚀 Ready for Production / ✅ Done, and never skips the staging columns. The AISDLC repo itself runs solo.
+- **Team mode** — 2+ humans coordinate. AI only exits AI-active columns; humans move tickets into them. PR review and merge are human actions. The ERP project (erp-core + erp-fe) runs team.
 
-Mode is declared in `.claude/stack-*.yml` (`framework.mode`) and echoed in the project's `AGENTS.md` / `CLAUDE.md`. Stack config wins if they disagree. See `.claude/rules/solo-vs-team-mode.md`.
+Mode is declared in `.claude/stack-*.yml` (`framework.mode`; missing = team) and echoed in the project's `AGENTS.md` / `CLAUDE.md`. Stack config wins if they disagree. See `.claude/rules/solo-vs-team-mode.md`.
 
 ## The agents (7 total)
 
@@ -71,21 +71,21 @@ Mode is declared in `.claude/stack-*.yml` (`framework.mode`) and echoed in the p
 | `@tester` | AI Development | Writes failing tests + fixtures from API contracts (TDD — before code) |
 | `@builder` | AI Development | BE models → APIs → pass tests → contract validation |
 | `@fe-builder` | AI Development | FE components + screens + API client from contracts |
-| `@shipper` | Staging Ready + Rework | Staging deploy + rework + docs + production checklist + release composition |
+| `@shipper` | Staging Ready + Rework + 🚨 Hotfix | Staging deploy (only when the stack file defines staging) + rework + hotfix lane + docs + production checklist |
 
-Agent definitions live in `.claude/agents/`. Each agent has one file: `agent.md`.
+Agent definitions live in `.claude/agents/`, one flat file per agent: `.claude/agents/<name>.md` (e.g. `.claude/agents/builder.md`).
 
 ## Hard rules (the non-negotiable ones)
 
 Each one maps to a specific production incident, scope explosion, or client-engagement lesson:
 
-1. **Verification Gate** (`.claude/rules/kanban-workflow.md`) — No ticket moves to 👀 Code Review without pasted command output proving the change works, or an explicit "cannot verify — blocked by #X" comment naming the blocker.
+1. **Verification Gate** (full text: `.claude/agents/builder.md`, section "Verification Gate") — No ticket moves to 👀 Code Review without pasted command output proving the change works, or an explicit "cannot verify — blocked by #X" comment naming the blocker.
 
-2. **Size Audit + auto tech-debt ticketing** (F1, `.claude/rules/size-audit.md`) — Before planning or building against unfamiliar code, agents measure the target files. Red thresholds (1500+ LOC file, 600+ LOC class, 25+ ViewSet actions, 300+ LOC component) trigger a pause, auto-ticketing of tech debt, and a proposed narrowed scope.
+2. **Size Audit + auto tech-debt ticketing** (F1, `.claude/rules/size-audit.md`) — Before planning or building against unfamiliar code, agents measure the target files. Red thresholds (per stack, listed in the rule) trigger a pause, auto-ticketing of tech debt, and a proposed narrowed scope.
 
 3. **Scope discrepancy escalation** (F2, `.claude/rules/size-audit.md`) — Mid-build, if actual scope trends past 2× the complexity budget, the agent pauses and posts a scope question instead of silently absorbing.
 
-4. **Operating mode governs autonomy** (F13, `.claude/rules/solo-vs-team-mode.md`) — Solo = AI runs; team = AI waits. Declared per project. ✅ Done is always human-only, regardless of mode.
+4. **Operating mode governs autonomy** (F13, `.claude/rules/solo-vs-team-mode.md`) — Solo = AI runs; team = AI waits. Declared per project. 🚀 Ready for Production and ✅ Done are always human-only, regardless of mode.
 
 5. **Ticket movement = permission** (`.claude/rules/kanban-workflow.md`) — In team mode, AI never self-promotes into an AI-active column. In solo mode, it does, and logs every move as a ticket comment.
 
@@ -95,7 +95,9 @@ Each one maps to a specific production incident, scope explosion, or client-enga
 
 8. **Parent ticket + sub-issues** (F32, `.claude/rules/agent-communication.md`) — Any task with 3+ related sub-tasks must be modeled as a GitHub Issue parent with linked sub-issues (not flat lists, not draft items).
 
-9. **Framework gap capture** (F38 — rule pending, ticket filed) — When AI hits a gap mid-project-work (rule silent, agent missing guidance, reality drift), file a one-line Backlog ticket on the framework board and keep working. No gate. No plan. Just capture.
+9. **Framework gap capture** (F38, `.claude/rules/framework-observation.md`) — When AI hits a gap mid-project-work (rule silent, agent missing guidance, reality drift), file a one-line Backlog ticket on the framework board with `bin/aisdlc-observe.sh --type <rule|pattern|drift|agent> --project <p> --ticket <n> --summary "..."` and keep working. No gate. No plan. Just capture.
+
+10. **Source control** (`.claude/rules/source-control.md`) — Branch `feature/<ticket-id>-<slug>` from `<remote>/<pr_base>` (stack file), PR back into `<pr_base>`; the human squash-merges. AI never commits or pushes to the default branch, never force-pushes, never merges. Commit attribution follows `commit_attribution` in the stack file (ERP: `none`).
 
 ## Directory layout
 
@@ -106,15 +108,20 @@ AISDLC/                             ← the framework repo
 ├── CLAUDE.md
 ├── AGENTS.md → CLAUDE.md           ← symlink (Cursor auto-reads)
 ├── .claude/
-│   ├── agents/                     ← 7 agent definitions
-│   ├── rules/                      ← kanban, communication, size-audit, secrets,
-│   │                                  client-facing-boundary, solo-vs-team
+│   ├── agents/<name>.md            ← 7 agent definitions (flat files)
+│   ├── rules/                      ← kanban, source-control, gh-recipes, size-audit,
+│   │                                  secrets, ticket-discipline, ... (one file each)
+│   ├── skills/aisdlc-init/         ← /aisdlc-init project setup skill
+│   ├── board-config.yml            ← framework board IDs
 │   └── settings.json
+├── bin/aisdlc-observe.sh           ← files a framework-gap ticket
 ├── .cursor/
 │   └── rules/                      ← 12 framework Cursor rules (pointer pattern)
 ├── templates/
 │   ├── *.md / *.yaml               ← FRD, Execution Plan, API Contract, etc.
-│   └── PROJECT-CONTEXT/            ← template for per-project context repo
+│   ├── PROJECT-CONTEXT/            ← template for per-project context repo
+│   └── SETUP-TICKETS/              ← idempotent setup tickets used by /aisdlc-init
+├── archive/                        ← historical files, not loaded
 └── docs/
     ├── Framework-Wiki.md           ← this file
     ├── Engineer-Quickstart.md      ← engineer-facing guide
@@ -124,47 +131,40 @@ AISDLC/                             ← the framework repo
 
 ### Project workspace (consumer)
 
+The workspace IS the AISDLC clone. Project repos are cloned inside it and gitignored there (each keeps its own git) — see the root `.gitignore` and `CLAUDE.md`.
+
 ```
-<project>/                          ← workspace folder, not a git repo
-├── aisdlc/                         ← framework clone (sibling)
-├── <project>-context/              ← per-project context (internal by default)
-│   ├── contracts/
-│   ├── indexes/
-│   └── decisions/
-├── <project>-<service>/            ← application repo(s), 1..N
-├── CLAUDE.md
-├── AGENTS.md → CLAUDE.md
+AISDLC/                             ← the workspace = the framework clone
+├── CLAUDE.md, AGENTS.md → CLAUDE.md
 ├── .claude/
-│   ├── agents → ../aisdlc/.claude/agents        (symlink)
-│   ├── rules  → ../aisdlc/.claude/rules         (symlink)
-│   ├── board-config.yml                         (project-specific)
-│   └── stack-*.yml                              (project-specific)
-└── .cursor/
-    └── rules/
-        ├── framework → ../../aisdlc/.cursor/rules   (symlink — framework rules)
-        └── <project-specific>.mdc                    (repo lists, globs, overrides)
+│   ├── agents/, rules/, skills/    ← framework (shared by every project)
+│   ├── board-config.yml            ← framework board only
+│   ├── stack-be.yml, stack-fe.yml  ← the project's facts (ERP: erp-core, erp-fe)
+│   └── stack-framework.yml         ← facts for meta-work on AISDLC itself
+├── <project>-context/              ← per-project context repo (gitignored here, own git)
+│   ├── board-config.yml            ← the project board IDs
+│   ├── docs/, contracts/, indexes/
+├── <project-be>/                   ← backend repo (gitignored here; ERP: erp-core/)
+└── <project-fe>/                   ← frontend repo(s) (gitignored here; ERP: erp-fe/)
 ```
 
 ## Bringing the framework to a new project
 
-Today's process is mostly manual. F28 (project init command) will collapse it to one command; until F28 ships, run through these steps:
+`/aisdlc-init <project-slug> --stack=<spring-next|django-react|voice-s2s> --repos=<a,b>` (`.claude/skills/aisdlc-init/SKILL.md`) checks each step below and files a setup ticket for every one that is missing. By hand, the steps are:
 
-1. Create the workspace folder: `mkdir -p <project> && cd <project>`.
-2. Clone AISDLC as a sibling: `git clone git@github.com:<owner>/AISDLC.git aisdlc`.
-3. Clone your project's code repos as siblings (they'll be gitignored from AISDLC's perspective).
-4. Create `<project>-context/` from `aisdlc/templates/PROJECT-CONTEXT/` and push to your org's GitHub.
-5. Wire `.claude/`:
-   - `mkdir -p .claude && ln -s ../aisdlc/.claude/agents .claude/agents && ln -s ../aisdlc/.claude/rules .claude/rules`.
-   - Create `.claude/board-config.yml` with your project's board IDs.
-   - Create `stack-*.yml` with `framework.mode` and (once F34 lands) `framework.tools`.
-6. Wire `.cursor/` (if using Cursor):
-   - `mkdir -p .cursor/rules && ln -s ../../aisdlc/.cursor/rules .cursor/rules/framework`.
-7. Add `AGENTS.md → CLAUDE.md` symlinks at workspace root and in each code repo.
-8. Create a GitHub Project board with the 12 columns, priority/owner/scope fields.
-9. Run `@project-wiki` Generate mode to produce `<project>-context/docs/Product-Wiki.md`, `<project>-context/docs/TECH-Architecture-BE.md`, and `<project>-context/docs/TECH-Architecture-FE.md`.
-10. First build ticket runs size audit → populates `<project>-context/indexes/`.
-11. Create `release/<version>` long-lived branches per code repo.
-12. Start filing tickets in 📥 Backlog.
+1. Clone AISDLC — the clone is the workspace: `git clone git@github.com:Rohit-code/AISDLC.git AISDLC && cd AISDLC`.
+2. Clone your project's code repos inside it, naming the remote as the stack file's `remote` (add their folder names to `.gitignore`). ERP: `git clone -o github git@github-regnus-tech:RegnusTech/erp-core.git erp-core` and the same for `erp-fe` (`github-regnus-tech` is an SSH host alias on Rohit's Mac; others use `git@github.com:RegnusTech/...`).
+3. Create `<project>-context/` from `templates/PROJECT-CONTEXT/` and push it to your org's GitHub.
+4. Project config:
+   - Create `<project>-context/board-config.yml` with your project's board IDs (`.claude/board-config.yml` stays the framework board).
+   - Set `.claude/stack-*.yml` for your repos: `framework.mode`, `repo`, `remote`, `default_branch`, `pr_base`, `protected_branches`, `commit_attribution`, `staging`, test commands, `board_config` (examples: `.claude/stack-be.yml`, `.claude/stack-fe.yml`).
+5. Cursor: the framework rules are already in `.cursor/rules/` (generated by `bin/gen-cursor-rules.py`).
+6. Add `AGENTS.md → CLAUDE.md` symlinks in each code repo if they don't have one.
+7. Create a GitHub Project board with the 12 columns, priority/owner/scope fields (`templates/SETUP-TICKETS/_common/S02-project-board.md`).
+8. Run `@project-wiki` Generate mode to produce `<project>-context/docs/Product-Wiki.md`, `<project>-context/docs/TECH-Architecture-BE.md`, and `<project>-context/docs/TECH-Architecture-FE.md`.
+9. First build ticket runs size audit → populates `<project>-context/indexes/`.
+10. Protect each repo's default branch (no release branch: feature branches PR into `pr_base` — the default branch or a stream branch).
+11. Start filing tickets in 📥 Backlog.
 
 ## The framework evolves through its own board
 
@@ -172,7 +172,7 @@ The framework itself lives on its own GitHub project board, **"AI SDLC Pipeline"
 
 Additionally, per F38, AI **proactively files framework-gap tickets** on this board when it hits gaps during project work. No gate, no plan — capture and continue. Triage on the framework board happens out-of-band.
 
-See `docs/framework-board-reference.md` for the Project ID, field ID, and column option IDs needed for GraphQL automation.
+The board is user-owned: https://github.com/users/Rohit-code/projects/2. IDs live in `.claude/board-config.yml`; `docs/framework-board-reference.md` has the framework-board snippets.
 
 ## What's shipped vs what's next
 
@@ -212,13 +212,11 @@ Active (FRD Draft or Backlog on the framework board):
 - F25 — Git ownership (AI manages branches, commits, PRs, releases).
 - F26 — Release composition intelligence + auto release notes — **Tier 1**.
 - F27 — Cross-project framework shape — **deferred**.
-- F28 — Project init command (idempotent setup with stack variants).
 - F29 — Deployment rule (expand/contract migrations + blue-green patterns).
 - F30 — aws-ecs-bluegreen setup variant.
 - F31 — Extend `@shipper` for AWS deploys.
 - F34 — `framework.tools` field in stack-*.yml schema (sub-issue of F33).
 - F35 — Tool parity doc (sub-issue of F33).
-- F38 — Framework gap capture (filed; rule pending implementation).
 - F39 — Ticket discipline (intake, blockers, dual-channel status) — **Tier 1**.
 - F40 — Contract-driven feature flow (API+FE) — **Tier 1**.
 

@@ -50,18 +50,16 @@ When an agent notices tech debt worth fixing *outside* the current ticket's scop
 ```
 
 **Sizing convention** (use these exact definitions — not vibes):
-- **S** = fits in one ticket. ≤500 LOC changed, ≤8 files, ≤1 session. No FRD needed — it's a direct tech-debt ticket and can be picked up by the tech-debt autopilot.
+- **S** = fits in one ticket. ≤500 LOC changed, ≤8 files, ≤1 session. No FRD needed — it's a direct tech-debt ticket. (Automatic pickup of S tickets by an agent is future work, tracked as framework ticket F5; until then a human picks them.)
 - **M** = needs an FRD. Multi-session, multiple sub-tickets, probably touches >1 app. Goes through the normal planner flow.
 - **L** = needs a phase. Multi-week, cross-cutting, likely architectural (e.g., "split a large `billing` module into `billing` + `invoicing` + `collections`"). Goes in the roadmap, not the current sprint.
 
-Sizing drives where the tech-debt ticket lands. S-tickets go straight to 📝 FRD Draft with label `tech-debt` and are eligible for autonomous pickup. M/L tickets need Product triage before the planner touches them.
-
-After posting the observation, create a separate issue with label `tech-debt` (in 📝 FRD Draft). The current ticket's work is NOT blocked — tech debt is always a follow-up.
+After posting the observation, create a separate issue with label `tech-debt`: in **📥 Backlog in team mode**; **📝 FRD Draft is allowed in solo mode** (`.claude/rules/kanban-workflow.md`). M/L tickets need Product triage before the planner touches them. The current ticket's work is NOT blocked — tech debt is always a follow-up.
 
 ### Decision Log
 ```
 ### Decision: [Title]
-**Stage**: [1-10] | **Decided by**: [Product/Tech/AI] | **Date**: YYYY-MM-DD
+**Column**: [0-11, per `.claude/rules/kanban-workflow.md`] | **Decided by**: [Product/Tech/AI] | **Date**: YYYY-MM-DD
 **Context**: [Why this decision was needed]
 **Decision**: [What was decided]
 **Alternatives**: [What else was considered]
@@ -112,75 +110,17 @@ Do NOT create a parent when:
 - Sub-tasks are completely independent (e.g., 5 unrelated bug fixes)
 - The parent would have no content of its own beyond listing children
 
-### How to create parent + sub-issues on a GitHub Projects v2 board
+### How to create parent + sub-issues
 
-**Important**: GitHub's native sub-issue feature only works for **real GitHub Issues**, not project-level draft issues. Draft issues on a project board cannot be parents or children.
+Sub-issues only work between **real GitHub issues**, never project-level draft items (framework tickets are real issues in `Rohit-code/AISDLC`; project tickets are real issues in the repo named by the project's board config).
 
-**Step 1 — Create real Issues, not draft issues**
+1. Create the parent issue, then each child issue.
+2. Add every issue to the board.
+3. Link each child to the parent (`addSubIssue`).
+4. Set Status and Priority on each board item (moves allowed per `.claude/rules/kanban-workflow.md`).
+5. Drafts created by mistake are converted to real issues first.
 
-For projects whose board uses a repo (declared in `.claude/board-config.yml` as `repo:`), create issues in that repo:
-
-```bash
-gh issue create --repo <owner>/<repo> \
-  --title "<parent title>" \
-  --body "$(cat <<'EOF'
-[parent body describing the epic]
-EOF
-)"
-# Then for each sub-issue:
-gh issue create --repo <owner>/<repo> --title "<sub title>" --body "<sub body>"
-```
-
-**Step 2 — Add each issue to the project board**
-
-```bash
-gh project item-add <project-number> --owner <org> --url <issue-url>
-```
-
-**Step 3 — Link sub-issues to the parent**
-
-Use the GraphQL `addSubIssue` mutation. Requires the `issueId` (node ID) of both parent and child:
-
-```bash
-# Get issue IDs
-gh api graphql -f query='
-query {
-  repository(owner: "<org>", name: "<repo>") {
-    issue(number: <parent-number>) { id }
-  }
-}'
-
-# Link child to parent
-gh api graphql -f query='
-mutation {
-  addSubIssue(input: {
-    issueId: "<parent-issue-id>",
-    subIssueId: "<child-issue-id>"
-  }) {
-    subIssue { number title }
-  }
-}'
-```
-
-**Step 4 — Set Status and Priority** on the project item for each issue (as with any ticket).
-
-### Converting existing draft issues to real sub-issues
-
-If tickets were already created as drafts (project-only), convert them to real issues first:
-
-```bash
-gh api graphql -f query='
-mutation {
-  convertProjectV2DraftIssueItemToIssue(input: {
-    itemId: "<project-item-id>",
-    repositoryId: "<repo-node-id>"
-  }) {
-    item { content { ... on Issue { id number } } }
-  }
-}'
-```
-
-The project item is preserved (same board position, same Status). The draft is now backed by a real issue that can participate in sub-issue relationships.
+Commands for every step: `.claude/rules/gh-recipes.md`.
 
 ### Parent ticket body template
 
@@ -213,18 +153,16 @@ The project item is preserved (same board position, same Status). The draft is n
 Same as a regular ticket, plus:
 
 ```markdown
-## Depends on
-- <ticket-number> (inside the epic)
-- <ticket-number> (outside the epic)
+Depends on: #<N>, #<M>
 ```
 
-Always declare dependencies explicitly. The sub-issue order on the board doesn't imply order of execution.
+Always declare dependencies explicitly, as one `Depends on: #N` line (several: `Depends on: #12, #15`) — inside or outside the epic. A dependency is met when its PR is merged; check command in `.claude/rules/gh-recipes.md`. The sub-issue order on the board doesn't imply order of execution.
 
 ### Agents MUST
 
 - When creating 3+ related tickets, ask: "is this a parent-child structure?" If yes, create parent first, then children linked via `addSubIssue`.
 - When closing a sub-issue, check if all siblings are closed — if yes, post a comment on the parent summarizing the epic's completion.
-- When moving a sub-issue's Status, consider whether the parent's Status should move too (usually parent stays in FRD Draft until 50%+ sub-issues are Done, then moves to AI Development, etc. — use judgment).
+- The parent's Status follows the transition matrix in `.claude/rules/kanban-workflow.md` like any other ticket; it is not derived from its sub-issues.
 
 ## Agent Behavior Rules
 

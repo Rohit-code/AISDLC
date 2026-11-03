@@ -46,7 +46,7 @@ Voice is event-driven, not request/response. Messages like `session.start`, `inp
 
 ## Idempotent check
 ```bash
-test -f $CONTEXT_DIR/contracts/events.yaml
+test -f "$CONTEXT_DIR/contracts/events.yaml"
 ```
 
 ## Acceptance

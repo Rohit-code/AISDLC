@@ -41,7 +41,7 @@ Voice UX lives or dies on end-to-end latency. Without per-hop timing, you can't 
 
 ## Idempotent check
 ```bash
-grep -qrE 'latency_hop|trace_span.*voice' $MAIN_REPO/ 2>/dev/null
+grep -qrE "latency_hop|trace_span.*voice" "$MAIN_REPO" 2>/dev/null
 ```
 
 ## Acceptance
